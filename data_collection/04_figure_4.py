@@ -9,10 +9,11 @@ __email__ = "robbert.harms@maastrichtuniversity.nl"
 pjoin = mdt.make_path_joiner('/home/robbert/phd-data/papers/sampling_paper/simulations/')
 nmr_trials = 10
 simulations_unweighted_signal_height = 1e4
-nmr_samples = 100000
+nmr_samples = 10000
 protocols = ['hcp_mgh_1003', 'rheinland_v3a_1_2mm']
 noise_snrs = [30]
-model_names = ['BallStick_r1', 'Tensor', 'NODDI', 'CHARMED_r1']
+model_names = ['BallStick_r1', 'BallStick_r2', 'BallStick_r3', 'Tensor',
+               'NODDI', 'CHARMED_r1', 'CHARMED_r2', 'CHARMED_r3']
 ap_methods = ['AMWG', 'MWG', 'FSL', 'SCAM']
 
 for model_name in model_names:
@@ -33,18 +34,18 @@ for model_name in model_names:
                         input_data,
                         current_pjoin('output', str(snr)))
 
-                    with config_context('''
-                        processing_strategies:
-                            sampling:
-                                max_nmr_voxels: 1000
-                    '''):
-                        for trial_ind in range(nmr_trials):
-                            print('Going to process', method_name, protocol_name, model_name, snr, trial_ind)
+                    for trial_ind in range(nmr_trials):
+                        print('Going to process', method_name, protocol_name, model_name, snr, trial_ind)
 
+                        with config_context('''
+                            processing_strategies:
+                                sampling:
+                                    max_nmr_voxels: 1000
+                        '''):
                             mdt.sample_model(
                                 model_name,
                                 input_data,
-                                current_pjoin('output', str(snr), 'sampling_methods', method_name, str(trial_ind)),
+                                current_pjoin('figure_4', str(snr), method_name, str(trial_ind)),
                                 method=method_name,
                                 nmr_samples=nmr_samples,
                                 burnin=0,
@@ -52,7 +53,7 @@ for model_name in model_names:
                                 initialization_data={'inits': fit_results},
                                 store_samples=False,
                                 post_processing={
-                                    'model_defined_maps': True,
                                     'multivariate_ess': True,
-                                    'proposal_state': True}
+                                    'model_defined_maps': False,
+                                    'proposal_state': False}
                             )

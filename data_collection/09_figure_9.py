@@ -1,8 +1,7 @@
 import glob
 import os
-import time
-
 import mdt
+from mdt import config_context
 from mdt.lib.batch_utils import SimpleBatchProfile, BatchFitProtocolLoader, SimpleSubjectInfo
 
 __author__ = 'Robbert Harms'
@@ -12,17 +11,24 @@ __email__ = 'robbert.harms@maastrichtuniversity.nl'
 __licence__ = 'LGPL v3'
 
 
-"""
-Computes the optimization and sampling times for Table 7 of the paper. 
-
-This samples only 10k datapoints and extrapolates the rest up to the desired number of samples.  
-"""
+"""Estimate the required number of ESS."""
 
 
-pjoin = mdt.make_path_joiner(r'/home/robbert/phd-data/papers/sampling_paper/runtime_table/')
+pjoin = mdt.make_path_joiner(r'/home/robbert/phd-data/papers/sampling_paper/ess/')
 
-if not os.path.exists(pjoin()):
-    os.makedirs(pjoin())
+
+nmr_samples = 10000
+
+model_names = [
+    'BallStick_r1',
+    'BallStick_r2',
+    'BallStick_r3',
+    'Tensor',
+    'NODDI',
+    'CHARMED_r1',
+    'CHARMED_r2',
+    'CHARMED_r3'
+]
 
 
 class RheinLandBatchProfile(SimpleBatchProfile):
@@ -65,64 +71,47 @@ class RheinLandBatchProfile(SimpleBatchProfile):
         return 'Rheinland'
 
 
-def func(subject_info, model_name, dataset_name, opt_output_dir, samples_output_dir):
+def func(subject_info, model_name, opt_output_dir, samples_output_dir):
     subject_id = subject_info.subject_id
     input_data = subject_info.get_input_data()
+    base_folder = subject_info.subject_base_folder
 
-    print('{}, {}, {}'.format(dataset_name, subject_id, model_name))
-
-    start = time.time()
     starting_point = mdt.fit_model(model_name + ' (Cascade)',
                                    input_data,
-                                   opt_output_dir + '/' + subject_id,
-                                   post_processing={'uncertainties': False})
+                                   opt_output_dir + '/' + subject_id)
 
-    with open(pjoin('optimization_times.txt'), 'a') as f:
-        f.write('{}, {}, {}, {}\n'.format(dataset_name, model_name, subject_id, time.time() - start))
+    wm_mask = mdt.load_brain_mask(base_folder + '/output/optimization_paper/wm_mask.nii.gz')
 
-    start = time.time()
-    mdt.sample_model(model_name,
-                     input_data,
-                     samples_output_dir + '/' + subject_id,
-                     method='AMWG',
-                     initialization_data={'inits': starting_point},
-                     store_samples=False,
-                     nmr_samples=10000,
-                     burnin=0,
-                     thinning=0,
-                     post_processing={'multivariate_ess': False,
-                                      'model_defined_maps': False})
+    wm_input_data = input_data.copy_with_updates(input_data.protocol, input_data.signal4d,
+                                                 wm_mask, input_data.nifti_header)
 
-    with open(pjoin('sampling_times.txt'), 'a') as f:
-        f.write('{}, {}, {}, {}\n'.format(dataset_name, model_name, subject_id, time.time() - start))
-
-
-model_names = [
-    'BallStick_r1',
-    'BallStick_r2',
-    'BallStick_r3',
-    'NODDI',
-    'Tensor'
-    'CHARMED_r1',
-    'CHARMED_r2',
-    'CHARMED_r3'
-]
+    print('Subject {}'.format(subject_id))
+    with config_context('''
+                            processing_strategies:
+                                sampling:
+                                    max_nmr_voxels: 1000
+                        '''):
+        mdt.sample_model(model_name,
+                         wm_input_data,
+                         samples_output_dir + '/' + subject_id,
+                         nmr_samples=nmr_samples,
+                         initialization_data={'inits': starting_point},
+                         store_samples=False,
+                         post_processing={'multivariate_ess': True,
+                                          'model_defined_maps': False})
 
 
 for model_name in model_names:
     mdt.batch_apply(func, '/home/robbert/phd-data/rheinland/',
                     batch_profile=RheinLandBatchProfile(resolutions_to_use=['data_ms20']),
-                    subjects_selection=[0],
+                    subjects_selection=range(10),
                     extra_args=[model_name,
-                                'rheinland',
-                                pjoin('rheinland'),
-                                pjoin('rheinland')
-                                ])
+                                '/home/robbert/phd-data/rheinland_output/',
+                                pjoin('rheinland')])
 
     mdt.batch_apply(func, '/home/robbert/phd-data/hcp_mgh/',
                     batch_profile='HCP_MGH',
-                    subjects_selection=['mgh_1003'],
+                    subjects_selection=range(10),
                     extra_args=[model_name,
-                                'hcp_mgh',
-                                pjoin('hcp_mgh'),
+                                '/home/robbert/phd-data/hcp_mgh_output/',
                                 pjoin('hcp_mgh')])

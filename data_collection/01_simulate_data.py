@@ -29,10 +29,14 @@ protocols = [
 
 # The models for which we want to simulate the data
 models = [
-    'NODDI',
     'BallStick_r1',
+    'BallStick_r2',
+    'BallStick_r3',
+    'NODDI',
     'Tensor',
-    'CHARMED_r1'
+    'CHARMED_r1',
+    'CHARMED_r2',
+    'CHARMED_r3'
 ]
 
 # The different SNR's we wish to simulate. Each additional SNR will generate a copy of the simulated data with
@@ -98,8 +102,43 @@ def prepare_charmed_r1_params(params_cube):
         ..., param_names.index('CHARMEDRestricted0.theta')]
     params_cube[..., param_names.index('Tensor.phi')] = params_cube[..., param_names.index('CHARMEDRestricted0.phi')]
 
-    # sort the Tensor diffusivities
+
+def prepare_ballstick2_params(params_cube):
+    """Make sure the weights sum to 1."""
+    weights_sum = np.sum(params_cube[:, [1, 4]], axis=1)
+    indices = weights_sum > 1
+    params_cube[indices, 1] /= weights_sum[indices]
+    params_cube[indices, 4] /= weights_sum[indices]
+
+
+def prepare_charmed2_params(params_cube):
+    """Make sure the weights sum to 1 and sort the Tensor diffusivities"""
+    weights_sum = np.sum(params_cube[:, [7, 11]], axis=1)
+    indices = weights_sum > 1
+    params_cube[indices, 7] /= weights_sum[indices]
+    params_cube[indices, 11] /= weights_sum[indices]
+
     params_cube[:, 1:4] = np.sort(params_cube[:, 1:4], axis=1)[:, ::-1]
+
+
+def prepare_charmed3_params(params_cube):
+    """Make sure the weights sum to 1 and sort the Tensor diffusivities"""
+    weights_sum = np.sum(params_cube[:, [7, 11, 15]], axis=1)
+    indices = weights_sum > 1
+    params_cube[indices, 7] /= weights_sum[indices]
+    params_cube[indices, 11] /= weights_sum[indices]
+    params_cube[indices, 15] /= weights_sum[indices]
+
+    params_cube[:, 1:4] = np.sort(params_cube[:, 1:4], axis=1)[:, ::-1]
+
+
+def prepare_ballstick3_params(params_cube):
+    """Make sure the weights sum to 1."""
+    weights_sum = np.sum(params_cube[:, [1, 4, 7]], axis=1)
+    indices = weights_sum > 1
+    params_cube[indices, 1] /= weights_sum[indices]
+    params_cube[indices, 4] /= weights_sum[indices]
+    params_cube[indices, 7] /= weights_sum[indices]
 
 
 def prepare_tensor_cb(params_cube):
@@ -116,6 +155,24 @@ simulations = {
         prepare_params_cube_cb=None,
         lower_bounds=[1e2, 0.2, 0, 0],
         upper_bounds=[1e5, 0.8, np.pi, np.pi]
+    ),
+    'BallStick_r2': dict(
+        # Available parameters:
+        # ['S0.s0', 'w_stick0.w', 'Stick0.theta', 'Stick0.phi', 'w_stick1.w', 'Stick1.theta', 'Stick1.phi']
+        randomize_parameters=['w_stick0.w', 'Stick0.theta', 'Stick0.phi', 'w_stick1.w', 'Stick1.theta', 'Stick1.phi'],
+        prepare_params_cube_cb=prepare_ballstick2_params,
+        lower_bounds=[1e2, 0.2, 0, 0, 0.2, 0, 0],
+        upper_bounds=[1e5, 0.8, np.pi, np.pi, 0.8, np.pi, np.pi]
+    ),
+    'BallStick_r3': dict(
+        # Available parameters:
+        # ['S0.s0', 'w_stick0.w', 'Stick0.theta', 'Stick0.phi', 'w_stick1.w', 'Stick1.theta', 'Stick1.phi',
+        # 'w_stick2.w', 'Stick2.theta', 'Stick2.phi']
+        randomize_parameters=['w_stick0.w', 'Stick0.theta', 'Stick0.phi', 'w_stick1.w', 'Stick1.theta', 'Stick1.phi',
+                              'w_stick2.w', 'Stick2.theta', 'Stick2.phi'],
+        prepare_params_cube_cb=prepare_ballstick3_params,
+        lower_bounds=[1e2, 0.2, 0, 0, 0.2, 0, 0, 0.2, 0, 0],
+        upper_bounds=[1e5, 0.8, np.pi, np.pi, 0.8, np.pi, np.pi, 0.8, np.pi, np.pi]
     ),
     'NODDI': dict(
         # Available parameters:
@@ -135,6 +192,35 @@ simulations = {
         prepare_params_cube_cb=prepare_charmed_r1_params,
         lower_bounds=[1e3, 1e-9, 3e-10, 3e-10, 0, 0, 0, 0.2, 3e-10, 0, 0],
         upper_bounds=[1e9, 5e-9, 5e-9, 3e-9, np.pi, np.pi, np.pi, 0.8, 3e-9, np.pi, np.pi],
+    ),
+    'CHARMED_r2': dict(
+        # Available parameters:
+        # ['S0.s0', 'Tensor.d', 'Tensor.dperp0', 'Tensor.dperp1', 'Tensor.theta', 'Tensor.phi', 'Tensor.psi', 'w_res0.w',
+        #  'CHARMEDRestricted0.d', 'CHARMEDRestricted0.theta', 'CHARMEDRestricted0.phi', 'w_res1.w',
+        #  'CHARMEDRestricted1.d', 'CHARMEDRestricted1.theta', 'CHARMEDRestricted1.phi']
+        randomize_parameters=['Tensor.d', 'Tensor.dperp0', 'Tensor.dperp1', 'Tensor.theta', 'Tensor.phi', 'Tensor.psi',
+                              'w_res0.w',
+                              'CHARMEDRestricted0.d', 'CHARMEDRestricted0.theta', 'CHARMEDRestricted0.phi', 'w_res1.w',
+                              'CHARMEDRestricted1.d', 'CHARMEDRestricted1.theta', 'CHARMEDRestricted1.phi'],
+        prepare_params_cube_cb=prepare_charmed2_params,
+        lower_bounds=[1e3, 1e-9, 3e-10, 3e-10, 0, 0, 0, 0.2, 3e-10, 0, 0, 0.2, 3e-10, 0, 0],
+        upper_bounds=[1e9, 5e-9, 5e-9, 3e-9, np.pi, np.pi, np.pi, 0.8, 3e-9, np.pi, np.pi, 0.8, 3e-9, np.pi, np.pi],
+    ),
+    'CHARMED_r3': dict(
+        # Available parameters:
+        # ['S0.s0', 'Tensor.d', 'Tensor.dperp0', 'Tensor.dperp1', 'Tensor.theta', 'Tensor.phi', 'Tensor.psi', 'w_res0.w',
+        #  'CHARMEDRestricted0.d', 'CHARMEDRestricted0.theta', 'CHARMEDRestricted0.phi', 'w_res1.w',
+        #  'CHARMEDRestricted1.d', 'CHARMEDRestricted1.theta', 'CHARMEDRestricted1.phi', 'w_res2.w',
+        #  'CHARMEDRestricted2.d', 'CHARMEDRestricted2.theta', 'CHARMEDRestricted2.phi']
+        randomize_parameters=['Tensor.d', 'Tensor.dperp0', 'Tensor.dperp1', 'Tensor.theta', 'Tensor.phi', 'Tensor.psi',
+                              'w_res0.w',
+                              'CHARMEDRestricted0.d', 'CHARMEDRestricted0.theta', 'CHARMEDRestricted0.phi', 'w_res1.w',
+                              'CHARMEDRestricted1.d', 'CHARMEDRestricted1.theta', 'CHARMEDRestricted1.phi', 'w_res2.w',
+                              'CHARMEDRestricted2.d', 'CHARMEDRestricted2.theta', 'CHARMEDRestricted2.phi'],
+        prepare_params_cube_cb=prepare_charmed3_params,
+        lower_bounds=[1e3, 1e-9, 3e-10, 3e-10, 0, 0, 0, 0.2, 3e-10, 0, 0, 0.2, 3e-10, 0, 0, 0.2, 3e-10, 0, 0],
+        upper_bounds=[1e9, 5e-9, 5e-9, 3e-9, np.pi, np.pi, np.pi, 0.8, 3e-9, np.pi, np.pi, 0.8, 3e-9, np.pi, np.pi,
+                      0.8, 3e-9, np.pi, np.pi],
     ),
     'Tensor': dict(
         # Available parameters:

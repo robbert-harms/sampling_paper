@@ -203,7 +203,7 @@ for model_name in ['BallStick_r1', 'NODDI']:
     samples = mdt.load_sample(pjoin('figure_8', model_name, 'samples', param_names[model_name]))
 
     for th in thinning:
-        thinning_samples[th] = samples[0, 200:(nmr_samples * th)+200:th]
+        thinning_samples[th] = samples[0, (nmr_samples * th):th]
 
     thinning_method_means['Thinning'] = [np.mean(samples[0, :(nmr_samples * th):th]) for th in range(1, 21)]
     thinning_method_stds['Thinning'] = [np.std(samples[0, :(nmr_samples * th):th]) for th in range(1, 21)]
