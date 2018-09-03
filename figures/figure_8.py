@@ -186,24 +186,31 @@ def plot_thinning(axes, thinnings, label):
     axes.get_xticklabels()[-1].set_horizontalalignment('right')
 
 
+def load_samples(model_name):
+    if model_name == 'NODDI':
+        return mdt.load_sample(pjoin('figure_8', model_name, 'samples', 'w_ic.w'))
+    else:
+        samples = mdt.load_samples(pjoin('figure_8', model_name, 'samples'))
+        return samples['w_res0.w'] + samples['w_res1.w'] + samples['w_res2.w']
+
+
 img_pjoin = mdt.make_path_joiner('/tmp/sampling_paper/thinning/voxel_demo/', make_dirs=True)
 
-param_names = {'NODDI': 'w_ic.w', 'BallStick_r1': 'w_stick0.w'}
 thinning = [1, 10, 20]
 model_titles = {
-    'BallStick_r1': 'BallStick_in1 (FS)',
+    'CHARMED_r3': 'CHARMED_in3 (FR)',
     'NODDI': 'NODDI (FR)',
 }
 
-for model_name in ['BallStick_r1', 'NODDI']:
+for model_name in ['CHARMED_r3', 'NODDI']:
     thinning_samples = {}
     thinning_method_means = {}
     thinning_method_stds = {}
 
-    samples = mdt.load_sample(pjoin('figure_8', model_name, 'samples', param_names[model_name]))
+    samples = load_samples(model_name)
 
     for th in thinning:
-        thinning_samples[th] = samples[0, (nmr_samples * th):th]
+        thinning_samples[th] = samples[0, 0:(nmr_samples * th):th]
 
     thinning_method_means['Thinning'] = [np.mean(samples[0, :(nmr_samples * th):th]) for th in range(1, 21)]
     thinning_method_stds['Thinning'] = [np.std(samples[0, :(nmr_samples * th):th]) for th in range(1, 21)]
@@ -219,5 +226,5 @@ for model_name in ['BallStick_r1', 'NODDI']:
 # plt.show()
 
 subprocess.Popen('''
-    convert BallStick_r1.png NODDI.png +append thinning_chain_demo.png
+    convert CHARMED_r3.png NODDI.png +append thinning_chain_demo.png
 ''', shell=True, cwd=img_pjoin()).wait()

@@ -55,37 +55,34 @@ class RheinLandBatchProfile(SimpleBatchProfile):
         return 'Rheinland'
 
 
-FONT_SIZE = 18
-
-plt.rc('font', size=FONT_SIZE)          # controls default text sizes
-plt.rc('axes', titlesize=FONT_SIZE)     # fontsize of the axes title
-plt.rc('axes', labelsize=FONT_SIZE)    # fontsize of the x and y labels
-plt.rc('xtick', labelsize=FONT_SIZE)    # fontsize of the tick labels
-plt.rc('ytick', labelsize=FONT_SIZE)    # fontsize of the tick labels
-plt.rc('legend', fontsize=FONT_SIZE)    # legend fontsize
-plt.rc('figure', titlesize=FONT_SIZE)
-
-colors = ['r', 'b', 'g', 'k', 'y']
+def set_matplotlib_font_size(font_size):
+    import matplotlib.pyplot as plt
+    plt.rc('font', size=font_size)  # controls default text sizes
+    plt.rc('axes', titlesize=font_size)  # fontsize of the axes title
+    plt.rc('axes', labelsize=font_size)  # fontsize of the x and y labels
+    plt.rc('xtick', labelsize=font_size)  # fontsize of the tick labels
+    plt.rc('ytick', labelsize=font_size)  # fontsize of the tick labels
+    plt.rc('legend', fontsize=font_size)  # legend fontsize
+    plt.rc('figure', titlesize=font_size)
 
 
-nmr_samples = {
-    'BallStick_r1': 15000,
-    'NODDI': 20000,
-    'Tensor': 20000,
-    'CHARMED_r1': 30000,
-}
+set_matplotlib_font_size(18)
 
+nmr_samples = 10000
 model_names = [
     'BallStick_r1',
+    'BallStick_r2',
+    'BallStick_r3',
     'Tensor',
     'NODDI',
-    'CHARMED_r1'
+    'CHARMED_r1',
+    'CHARMED_r2',
+    'CHARMED_r3'
 ]
 
 
-def func(subject_info, model_name, opt_output_dir, samples_output_dir):
+def func(subject_info, model_name, samples_output_dir):
     subject_id = subject_info.subject_id
-    input_data = subject_info.get_input_data()
     base_folder = subject_info.subject_base_folder
 
     wm_mask = mdt.load_brain_mask(base_folder + '/output/optimization_paper/wm_mask.nii.gz')
@@ -95,10 +92,17 @@ def func(subject_info, model_name, opt_output_dir, samples_output_dir):
     ess = np.mean(mdt.create_roi(ess_data, wm_mask))
 
     nmr_params = len(mdt.get_model(model_name)().get_free_param_names())
-    more_samples_required = (minimum_multivariate_ess(nmr_params, alpha=0.05, epsilon=0.1) - ess) / (ess / nmr_samples[model_name])
-    ideal_nmr_samples = nmr_samples[model_name] + more_samples_required
 
-    # print(subject_id, model_name, ess, more_samples_required, ideal_nmr_samples)
+    print('min ess', minimum_multivariate_ess(nmr_params, alpha=0.05, epsilon=0.1))
+    print('avg ess', ess)
+    print('ess/samples', ess / nmr_samples)
+
+    more_samples_required = (minimum_multivariate_ess(nmr_params, alpha=0.05, epsilon=0.1) - ess) / (ess / nmr_samples)
+    ideal_nmr_samples = nmr_samples + more_samples_required
+
+    print('subject_id, model_name, ess, more_samples_required, ideal_nmr_samples')
+    print(subject_id, model_name, ess, more_samples_required, ideal_nmr_samples)
+    exit(0)
     return ideal_nmr_samples
 
 
@@ -111,7 +115,6 @@ for model_name in model_names:
         batch_profile=RheinLandBatchProfile(resolutions_to_use=['data_ms20']),
         subjects_selection=SelectedSubjects(indices=range(10)),
         extra_args=[model_name,
-                    '/home/robbert/phd-data/rheinland_output/',
                     '/home/robbert/phd-data/papers/sampling_paper/ess/rheinland/'
                     ])
     rls_results[model_name] = np.array([float(v) for v in ideal_samples_per_subject.values()])
@@ -121,13 +124,13 @@ for model_name in model_names:
         batch_profile=mdt.get_batch_profile('HCP_MGH')(),
         subjects_selection=SelectedSubjects(indices=range(10)),
         extra_args=[model_name,
-                    '/home/robbert/phd-data/hcp_mgh_output/',
                     '/home/robbert/phd-data/papers/sampling_paper/ess/hcp_mgh/'])
     mgh_results[model_name] = np.array([float(v) for v in ideal_samples_per_subject.values()])
 
-
-with open('/tmp/tmp_results_estimate_ess.pkl', 'wb') as f:
-    pickle.dump({'mgh': mgh_results, 'rls': rls_results}, f, pickle.HIGHEST_PROTOCOL)
+plt.show()
+exit(0)
+# with open('/tmp/tmp_results_estimate_ess.pkl', 'wb') as f:
+#     pickle.dump({'mgh': mgh_results, 'rls': rls_results}, f, pickle.HIGHEST_PROTOCOL)
 
 with open('/tmp/tmp_results_estimate_ess.pkl', 'rb') as f:
     d = pickle.load(f)
@@ -144,7 +147,7 @@ f, ax = plt.subplots()
 f.subplots_adjust(left=0.2)
 f.suptitle(r'Estimated minimum number of MCMC samples', y=1)
 
-x_locations = np.array([1, 4, 7, 10])  # the x locations for the groups
+x_locations = np.array(range(1, 3 * len(model_names), 3))  # the x locations for the groups
 width = 0.35       # the width of the bars
 
 mgh_rects = ax.bar((x_locations + 0) * width, [np.mean(mgh_results[k]) for k in model_names],
@@ -159,7 +162,7 @@ ax.set_ylabel('Number of samples')
 ax.set_xticks((x_locations + 1) * width)
 ax.set_xticklabels(model_names)
 ax.legend((mgh_rects[0], rls_rects[0]), ('HCP MGH', 'RLS'), loc='upper left')
-ax.set_ylim([9000, 40000])
+ax.set_ylim([9000, 35000])
 # ax.title(r'Estimated minimum number of MCMC samples')
 plt.show()
 

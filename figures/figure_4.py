@@ -27,7 +27,7 @@ set_matplotlib_font_size(18)
 pjoin = mdt.make_path_joiner('/home/robbert/phd-data/papers/sampling_paper/simulations/')
 nmr_trials = 10
 simulations_unweighted_signal_height = 1e4
-nmr_samples = 100000
+nmr_samples = 10000
 protocols = [
     'hcp_mgh_1003',
     'rheinland_v3a_1_2mm'
@@ -35,8 +35,13 @@ protocols = [
 noise_snrs = [30]
 model_names = [
     'BallStick_r1',
+    'BallStick_r2',
+    'BallStick_r3',
     'Tensor',
-    # 'NODDI', 'CHARMED_r1'
+    'NODDI',
+    'CHARMED_r1',
+    'CHARMED_r2',
+    'CHARMED_r3'
 ]
 ap_methods = ['MWG', 'SCAM', 'FSL', 'AMWG']
 
@@ -53,9 +58,13 @@ ap_method_names = {
 
 model_titles = {
     'BallStick_r1': 'BallStick_in1',
+    'BallStick_r2': 'BallStick_in2',
+    'BallStick_r3': 'BallStick_in3',
     'Tensor': 'Tensor',
     'NODDI': 'NODDI',
-    'CHARMED_r1': 'CHARMED_in1'
+    'CHARMED_r1': 'CHARMED_in1',
+    'CHARMED_r2': 'CHARMED_in2',
+    'CHARMED_r3': 'CHARMED_in3'
 }
 
 
@@ -71,8 +80,7 @@ def get_ess_results():
                     list_of_ideal = []
 
                     for trial_ind in range(nmr_trials):
-                        current_pjoin = pjoin.create_extended(protocol_name, model_name, 'output', str(snr),
-                                                              'sampling_methods',
+                        current_pjoin = pjoin.create_extended(protocol_name, model_name, 'figure_4', str(snr),
                                                               method_name, str(trial_ind), model_name, 'samples')
 
                         ess = mdt.load_nifti(current_pjoin('multivariate_ess', 'MultivariateESS')).get_data()

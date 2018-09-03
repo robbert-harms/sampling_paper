@@ -25,14 +25,14 @@ input_data = mdt.load_input_data(
     noise_std=44.19256591796875)  # noise std was pre-calculated using the entire dataset
 
 inits = {
-    'BallStick_r1': mdt.fit_model('BallStick_r1 (Cascade)', input_data, pjoin('figure_8')),
+    'CHARMED_r3': mdt.fit_model('CHARMED_r3 (Cascade)', input_data, pjoin('figure_8')),
     'NODDI': mdt.fit_model('NODDI (Cascade)', input_data, pjoin('figure_8')),
 }
 
 nmr_samples = 1000
 max_thinning = 20
 
-for model in ['NODDI']:
+for model in ['CHARMED_r3', 'NODDI']:
     mdt.sample_model(
         model,
         input_data,
@@ -41,5 +41,5 @@ for model in ['NODDI']:
         initialization_data={'inits': inits[model]},
         post_processing={'model_defined_maps': False},
         store_samples=True,
-        recalculate=True
+        recalculate=False
     )

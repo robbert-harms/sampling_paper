@@ -16,7 +16,6 @@ __email__ = "robbert.harms@maastrichtuniversity.nl"
 pjoin = mdt.make_path_joiner('/home/robbert/phd-data/papers/sampling_paper/simulations/')
 nmr_trials = 10
 simulations_unweighted_signal_height = 1e4
-nmr_samples = 100000
 protocols = [
     'hcp_mgh_1003',
     'rheinland_v3a_1_2mm'
@@ -24,8 +23,11 @@ protocols = [
 noise_snrs = [30]
 model_names = [
     'BallStick_r1',
+    'BallStick_r2',
+    'BallStick_r3',
     'Tensor',
-    # 'NODDI', 'CHARMED_r1'
+    'NODDI',
+    # 'CHARMED_r1'
 ]
 ap_methods = ['MWG', 'SCAM', 'FSL', 'AMWG']
 
@@ -40,11 +42,16 @@ ap_method_names = {
     'AMWG': 'AMWG'
 }
 
+
 model_titles = {
     'BallStick_r1': 'BallStick_in1',
+    'BallStick_r2': 'BallStick_in2',
+    'BallStick_r3': 'BallStick_in3',
     'Tensor': 'Tensor',
     'NODDI': 'NODDI',
-    'CHARMED_r1': 'CHARMED_in1'
+    'CHARMED_r1': 'CHARMED_in1',
+    'CHARMED_r2': 'CHARMED_in2',
+    'CHARMED_r3': 'CHARMED_in3'
 }
 
 
@@ -69,6 +76,10 @@ def get_ground_truth_measures(model_name, original_parameters):
             original_parameters[..., 3])
     elif model_name == 'BallStick_r1':
         return original_parameters[..., 1]
+    elif model_name == 'BallStick_r2':
+        return original_parameters[..., 1] + original_parameters[..., 4]
+    elif model_name == 'BallStick_r3':
+        return original_parameters[..., 1] + original_parameters[..., 4] + original_parameters[..., 7]
     elif model_name == 'NODDI':
         return original_parameters[..., 1]
     elif model_name == 'CHARMED_r1':
@@ -79,6 +90,10 @@ def get_results(model_name, samples_dir):
     volume_maps = mdt.load_volume_maps(samples_dir + '/model_defined_maps/')
 
     if model_name == 'BallStick_r1':
+        return volume_maps['FS']
+    if model_name == 'BallStick_r2':
+        return volume_maps['FS']
+    if model_name == 'BallStick_r3':
         return volume_maps['FS']
     elif model_name == 'Tensor':
         return volume_maps['Tensor.FA']
@@ -96,7 +111,6 @@ def get_protocol_results():
             model_results = {}
             for model_name in model_names:
                 for snr in noise_snrs:
-
                     current_pjoin = pjoin.create_extended(protocol_name, model_name)
 
                     ground_truth_map = np.squeeze(get_ground_truth_measures(
@@ -105,8 +119,7 @@ def get_protocol_results():
                     trial_means = []
                     trial_stds = []
                     for trial_ind in range(nmr_trials):
-                        trial_pjoin = current_pjoin.create_extended('output', str(snr),
-                                                                    'sampling_methods', method_name,
+                        trial_pjoin = current_pjoin.create_extended('figure_5', str(snr), method_name,
                                                                     str(trial_ind), model_name, 'samples')
 
                         trial_results = np.squeeze(get_results(model_name, trial_pjoin()))
@@ -141,44 +154,44 @@ x_locations = np.array([0, 1, 2, 3])  # the x locations for the groups
 width = 0.35       # the width of the bars
 colors = ['#e6bae6', '#8cb8db', '#fdc830', '#65e065']
 
-offsets = {
-    'BallStick_r1': {
-        'hcp_mgh_1003': {
-            'accuracy': True,
-            'precision': True
-        },
-        'rheinland_v3a_1_2mm': {
-            'accuracy': 1.57e2,
-            'precision': 2.08e2,
-        }},
-    'Tensor': {
-        'hcp_mgh_1003': {
-            'accuracy': 22,
-            'precision': 18,
-        },
-        'rheinland_v3a_1_2mm': {
-            'accuracy': 17,
-            'precision': 15,
-        }},
-    'NODDI': {
-        'hcp_mgh_1003': {
-            'accuracy': True,
-            'precision': True,
-        },
-        'rheinland_v3a_1_2mm': {
-            'accuracy': 1.38e2,
-            'precision': 1.75e2,
-        }},
-    'CHARMED_r1': {
-        'hcp_mgh_1003': {
-            'accuracy': 1,
-            'precision': 38,
-        },
-        'rheinland_v3a_1_2mm': {
-            'accuracy': 79,
-            'precision': 34,
-        }},
-}
+# offsets = {
+#     'BallStick_r1': {
+#         'hcp_mgh_1003': {
+#             'accuracy': True,
+#             'precision': True
+#         },
+#         'rheinland_v3a_1_2mm': {
+#             'accuracy': 1.57e2,
+#             'precision': 2.08e2,
+#         }},
+#     'Tensor': {
+#         'hcp_mgh_1003': {
+#             'accuracy': 22,
+#             'precision': 18,
+#         },
+#         'rheinland_v3a_1_2mm': {
+#             'accuracy': 17,
+#             'precision': 15,
+#         }},
+#     'NODDI': {
+#         'hcp_mgh_1003': {
+#             'accuracy': True,
+#             'precision': True,
+#         },
+#         'rheinland_v3a_1_2mm': {
+#             'accuracy': 1.38e2,
+#             'precision': 1.75e2,
+#         }},
+#     'CHARMED_r1': {
+#         'hcp_mgh_1003': {
+#             'accuracy': 1,
+#             'precision': 38,
+#         },
+#         'rheinland_v3a_1_2mm': {
+#             'accuracy': 79,
+#             'precision': 34,
+#         }},
+# }
 
 
 def plot_protocol_results(data, protocol_name, model_name):
@@ -216,7 +229,7 @@ def plot_protocol_results(data, protocol_name, model_name):
         ax.set_ylim((np.min(max_min) - 0.15 * (np.max(max_min) - np.min(max_min)),
                      np.max(max_min) + 0.15 * (np.max(max_min) - np.min(max_min))))
 
-        ax.ticklabel_format(useOffset=offsets[model_name][protocol_name][plot_type], style='sci', scilimits=(-2, 2), axis='y')
+        # ax.ticklabel_format(useOffset=offsets[model_name][protocol_name][plot_type], style='sci', scilimits=(-2, 2), axis='y')
         # ax.yaxis.set_major_formatter(ScalarFormatter(useOffset=False))
         ax.yaxis.set_major_locator(ticker.MaxNLocator(5))
 
@@ -224,7 +237,7 @@ def plot_protocol_results(data, protocol_name, model_name):
             ax.yaxis.tick_right()
         # ax.set_title(plot_type.capitalize())
 
-    f.suptitle(protocol_names[protocol_name], y=0.98, x=0.6)
+    f.suptitle(model_titles[model_name] + ' - ' + protocol_names[protocol_name], y=0.98, x=0.6)
     f.savefig(mdt.make_path_joiner('/tmp/sampling_paper/adaptive_proposals/acc_prec/', make_dirs=True)('{}_{}.png'.format(protocol_name, model_name)))
 
     subprocess.Popen("""

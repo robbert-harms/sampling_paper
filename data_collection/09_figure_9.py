@@ -16,8 +16,7 @@ __licence__ = 'LGPL v3'
 
 pjoin = mdt.make_path_joiner(r'/home/robbert/phd-data/papers/sampling_paper/ess/')
 
-
-nmr_samples = 10000
+nmr_samples = 20000
 
 model_names = [
     'BallStick_r1',
@@ -87,10 +86,10 @@ def func(subject_info, model_name, opt_output_dir, samples_output_dir):
 
     print('Subject {}'.format(subject_id))
     with config_context('''
-                            processing_strategies:
-                                sampling:
-                                    max_nmr_voxels: 1000
-                        '''):
+            processing_strategies:
+                sampling:
+                    max_nmr_voxels: 1000
+        '''):
         mdt.sample_model(model_name,
                          wm_input_data,
                          samples_output_dir + '/' + subject_id,
