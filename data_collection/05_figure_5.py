@@ -1,4 +1,5 @@
 import mdt
+from mdt import config_context
 
 __author__ = 'Robbert Harms'
 __date__ = "2018-08-14"
@@ -36,18 +37,18 @@ for model_name in model_names:
                     for trial_ind in range(nmr_trials):
                         print('Going to process', method_name, protocol_name, model_name, snr, trial_ind)
 
-                        mdt.sample_model(
-                            model_name,
-                            input_data,
-                            current_pjoin('figure_5', str(snr), method_name, str(trial_ind)),
-                            method=method_name,
-                            nmr_samples=nmr_samples,
-                            burnin=0,
-                            thinning=0,
-                            initialization_data={'inits': fit_results},
-                            store_samples=False,
-                            post_processing={
-                                'model_defined_maps': True,
-                                'multivariate_ess': False,
-                                'proposal_state': True}
-                        )
+                        with config_context('''
+                            processing_strategies:
+                                sampling:
+                                    max_nmr_voxels: 1000
+                        '''):
+                            mdt.sample_model(
+                                model_name,
+                                input_data,
+                                current_pjoin('figure_5', str(snr), method_name, str(trial_ind)),
+                                method=method_name,
+                                nmr_samples=nmr_samples,
+                                burnin=0,
+                                thinning=0,
+                                initialization_data={'inits': fit_results},
+                                store_samples=False)
