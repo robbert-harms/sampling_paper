@@ -45,10 +45,12 @@ for model_name in model_names:
                             mdt.sample_model(
                                 model_name,
                                 input_data,
-                                current_pjoin('figure_5', str(snr), method_name, str(trial_ind)),
+                                current_pjoin('figure_4_5', str(snr), method_name, str(trial_ind)),
                                 method=method_name,
                                 nmr_samples=nmr_samples,
                                 burnin=0,
                                 thinning=0,
                                 initialization_data={'inits': fit_results},
-                                store_samples=False)
+                                store_samples=False,
+                                post_processing={'multivariate_ess': True}
+                            )

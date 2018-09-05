@@ -1,3 +1,5 @@
+from matplotlib.compat import subprocess
+
 import mdt
 import numpy as np
 import matplotlib.pyplot as plt
@@ -123,11 +125,11 @@ def plot_protocol_results(data, model_name):
 
         if ind == 0:
             ax.set_ylabel('ESS')
-        ax.set_xticks((x_locations + 0.35) * width)
+        ax.set_xticks((x_locations) * width)
         ax.set_xticklabels([ap_method_names[ap_method] for ap_method in ap_methods])
         for tick in ax.get_xticklabels():
             tick.set_rotation(45)
-        ax.set_xlim(-0.1, 1.5)
+        ax.set_xlim(-0.45, 1.5)
         ax.set_ylim((np.min(max_min) - 0.15 * (np.max(max_min) - np.min(max_min)),
                      np.max(max_min) + 0.15 * (np.max(max_min) - np.min(max_min))))
         ax.ticklabel_format(useOffset=False, axis='y')
@@ -139,18 +141,26 @@ def plot_protocol_results(data, model_name):
 
 for model_name in model_names:
     plot_protocol_results(protocol_results, model_name)
-plt.show()
-#
-# commands = """
-# convert -bordercolor white -border 25x35 BallStick_r1.png BallStick_r1.png
-# convert -bordercolor white -border 25x35 Tensor.png Tensor.png
-# convert -bordercolor white -border 25x35 NODDI.png NODDI.png
-# convert -bordercolor white -border 25x35 CHARMED_r1.png CHARMED_r1.png
-#
-# convert BallStick_r1.png Tensor.png +append \( NODDI.png CHARMED_r1.png +append \) -append adaptive_proposals_ess.png
-# convert -trim adaptive_proposals_ess.png adaptive_proposals_ess.png
-# convert adaptive_proposals_ess.png -splice 0x100 adaptive_proposals_ess.png
-# convert adaptive_proposals_ess.png -font /usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf -gravity center -pointsize 28 -fill '#282828' -annotate +0-530 'ESS of Adaptive Proposals' adaptive_proposals_ess.png
-# convert -trim adaptive_proposals_ess.png adaptive_proposals_ess.png
-# """
-# subprocess.Popen(commands, shell=True, cwd='/tmp/sampling_paper/adaptive_proposals/ess/all/').wait()
+# plt.show()
+
+for model_name in model_names:
+    subprocess.Popen('convert -bordercolor white -border 25x35 {0}.png {0}.png'.format(model_name), shell=True,
+                     cwd='/tmp/sampling_paper/adaptive_proposals/ess/all/').wait()
+
+commands = """
+convert BallStick_r1.png Tensor.png +append \( NODDI.png CHARMED_r1.png +append \) -append {0}.png
+convert -trim {0}.png {0}.png
+convert {0}.png -splice 0x100 {0}.png
+convert {0}.png -font /usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf -gravity center -pointsize 28 -fill '#282828' -annotate +0-530 'ESS of Adaptive Proposals' {0}.png
+convert -trim {0}.png {0}.png
+""".format('adaptive_proposals_ess')
+subprocess.Popen(commands, shell=True, cwd='/tmp/sampling_paper/adaptive_proposals/ess/all/').wait()
+
+commands = """
+convert BallStick_r2.png BallStick_r3.png +append \( CHARMED_r2.png CHARMED_r3.png +append \) -append {0}.png
+convert -trim {0}.png {0}.png
+convert {0}.png -splice 0x100 {0}.png
+convert {0}.png -font /usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf -gravity center -pointsize 28 -fill '#282828' -annotate +0-530 'ESS of Adaptive Proposals' {0}.png
+convert -trim {0}.png {0}.png
+""".format('adaptive_proposals_ess_multidir')
+subprocess.Popen(commands, shell=True, cwd='/tmp/sampling_paper/adaptive_proposals/ess/all/').wait()
