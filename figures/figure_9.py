@@ -93,42 +93,37 @@ def func(subject_info, model_name, samples_output_dir):
 
     nmr_params = len(mdt.get_model(model_name)().get_free_param_names())
 
-    print('min ess', minimum_multivariate_ess(nmr_params, alpha=0.05, epsilon=0.1))
-    print('avg ess', ess)
-    print('ess/samples', ess / nmr_samples)
-
     more_samples_required = (minimum_multivariate_ess(nmr_params, alpha=0.05, epsilon=0.1) - ess) / (ess / nmr_samples)
     ideal_nmr_samples = nmr_samples + more_samples_required
 
     print('subject_id, model_name, ess, more_samples_required, ideal_nmr_samples')
     print(subject_id, model_name, ess, more_samples_required, ideal_nmr_samples)
-    exit(0)
     return ideal_nmr_samples
 
 
 mgh_results = {}
 rls_results = {}
 
-for model_name in model_names:
-    ideal_samples_per_subject = mdt.batch_apply(
-        func, '/home/robbert/phd-data/rheinland/',
-        batch_profile=RheinLandBatchProfile(resolutions_to_use=['data_ms20']),
-        subjects_selection=SelectedSubjects(indices=range(10)),
-        extra_args=[model_name,
-                    '/home/robbert/phd-data/papers/sampling_paper/ess/rheinland/'
-                    ])
-    rls_results[model_name] = np.array([float(v) for v in ideal_samples_per_subject.values()])
+# for model_name in model_names:
+#     ideal_samples_per_subject = mdt.batch_apply(
+#         func, '/home/robbert/phd-data/rheinland/',
+#         batch_profile=RheinLandBatchProfile(resolutions_to_use=['data_ms20']),
+#         subjects_selection=SelectedSubjects(indices=range(10)),
+#         extra_args=[model_name,
+#                     '/home/robbert/phd-data/papers/sampling_paper/ess/rheinland/'
+#                     ])
+#     rls_results[model_name] = np.array([float(v) for v in ideal_samples_per_subject.values()])
+#
+#     ideal_samples_per_subject = mdt.batch_apply(
+#         func, '/home/robbert/phd-data/hcp_mgh/',
+#         batch_profile=mdt.get_batch_profile('HCP_MGH')(),
+#         subjects_selection=SelectedSubjects(indices=range(10)),
+#         extra_args=[model_name,
+#                     '/home/robbert/phd-data/papers/sampling_paper/ess/hcp_mgh/'])
+#     mgh_results[model_name] = np.array([float(v) for v in ideal_samples_per_subject.values()])
 
-    ideal_samples_per_subject = mdt.batch_apply(
-        func, '/home/robbert/phd-data/hcp_mgh/',
-        batch_profile=mdt.get_batch_profile('HCP_MGH')(),
-        subjects_selection=SelectedSubjects(indices=range(10)),
-        extra_args=[model_name,
-                    '/home/robbert/phd-data/papers/sampling_paper/ess/hcp_mgh/'])
-    mgh_results[model_name] = np.array([float(v) for v in ideal_samples_per_subject.values()])
-
-plt.show()
-exit(0)
+# plt.show()
+# exit(0)
 # with open('/tmp/tmp_results_estimate_ess.pkl', 'wb') as f:
 #     pickle.dump({'mgh': mgh_results, 'rls': rls_results}, f, pickle.HIGHEST_PROTOCOL)
 

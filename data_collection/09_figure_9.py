@@ -16,17 +16,17 @@ __licence__ = 'LGPL v3'
 
 pjoin = mdt.make_path_joiner(r'/home/robbert/phd-data/papers/sampling_paper/ess/')
 
-nmr_samples = 20000
+nmr_samples = 50000
 
 model_names = [
-    'BallStick_r1',
-    'BallStick_r2',
-    'BallStick_r3',
-    'Tensor',
-    'NODDI',
-    'CHARMED_r1',
+    'CHARMED_r3',
     'CHARMED_r2',
-    'CHARMED_r3'
+    'CHARMED_r1'
+    'BallStick_r3',
+    'BallStick_r2',
+    'BallStick_r1',
+    'Tensor',
+    'NODDI'
 ]
 
 
@@ -79,10 +79,11 @@ def func(subject_info, model_name, opt_output_dir, samples_output_dir):
                                    input_data,
                                    opt_output_dir + '/' + subject_id)
 
-    wm_mask = mdt.load_brain_mask(base_folder + '/output/optimization_paper/wm_mask.nii.gz')
+    wm_mask = mdt.load_brain_mask(base_folder + '/wm_mask.nii.gz')
 
     wm_input_data = input_data.copy_with_updates(input_data.protocol, input_data.signal4d,
-                                                 wm_mask, input_data.nifti_header)
+                                                 wm_mask, input_data.nifti_header,
+                                                 noise_std=input_data.noise_std)
 
     print('Subject {}'.format(subject_id))
     with config_context('''
@@ -97,7 +98,8 @@ def func(subject_info, model_name, opt_output_dir, samples_output_dir):
                          initialization_data={'inits': starting_point},
                          store_samples=False,
                          post_processing={'multivariate_ess': True,
-                                          'model_defined_maps': False})
+                                          'model_defined_maps': False,
+                                          'univariate_normal': False})
 
 
 for model_name in model_names:
