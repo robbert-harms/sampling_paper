@@ -29,7 +29,7 @@ set_matplotlib_font_size(18)
 pjoin = mdt.make_path_joiner('/home/robbert/phd-data/papers/sampling_paper/simulations/')
 nmr_trials = 10
 simulations_unweighted_signal_height = 1e4
-nmr_samples = 10000
+nmr_samples = 100000
 protocols = [
     'hcp_mgh_1003',
     'rheinland_v3a_1_2mm'
@@ -82,7 +82,7 @@ def get_ess_results():
                     list_of_ideal = []
 
                     for trial_ind in range(nmr_trials):
-                        current_pjoin = pjoin.create_extended(protocol_name, model_name, 'figure_4', str(snr),
+                        current_pjoin = pjoin.create_extended(protocol_name, model_name, 'figure_4_5', str(snr),
                                                               method_name, str(trial_ind), model_name, 'samples')
 
                         ess = mdt.load_nifti(current_pjoin('multivariate_ess', 'MultivariateESS')).get_data()

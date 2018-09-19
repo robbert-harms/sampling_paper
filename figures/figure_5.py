@@ -27,7 +27,9 @@ model_names = [
     'BallStick_r3',
     'Tensor',
     'NODDI',
-    # 'CHARMED_r1'
+    'CHARMED_r1',
+    'CHARMED_r2',
+    'CHARMED_r3'
 ]
 ap_methods = ['MWG', 'SCAM', 'FSL', 'AMWG']
 
@@ -77,30 +79,41 @@ def get_ground_truth_measures(model_name, original_parameters):
     elif model_name == 'BallStick_r1':
         return original_parameters[..., 1]
     elif model_name == 'BallStick_r2':
-        return original_parameters[..., 1] + original_parameters[..., 4]
+        return original_parameters[..., 1]
     elif model_name == 'BallStick_r3':
-        return original_parameters[..., 1] + original_parameters[..., 4] + original_parameters[..., 7]
+        return original_parameters[..., 1]
     elif model_name == 'NODDI':
         return original_parameters[..., 1]
     elif model_name == 'CHARMED_r1':
         return original_parameters[..., 7]
+    elif model_name == 'CHARMED_r2':
+        return original_parameters[..., 7]
+    elif model_name == 'CHARMED_r3':
+        return original_parameters[..., 7]
 
 
 def get_results(model_name, samples_dir):
-    volume_maps = mdt.load_volume_maps(samples_dir + '/model_defined_maps/')
+    model_defined_maps = mdt.load_volume_maps(samples_dir + '/model_defined_maps/')
+    univariate_normal = mdt.load_volume_maps(samples_dir + '/univariate_normal/')
 
     if model_name == 'BallStick_r1':
-        return volume_maps['FS']
+        return model_defined_maps['FS']
     if model_name == 'BallStick_r2':
-        return volume_maps['FS']
+        # return model_defined_maps['FS']
+        return univariate_normal['w_stick0.w']
     if model_name == 'BallStick_r3':
-        return volume_maps['FS']
+        # return model_defined_maps['FS']
+        return univariate_normal['w_stick0.w']
     elif model_name == 'Tensor':
-        return volume_maps['Tensor.FA']
+        return model_defined_maps['Tensor.FA']
     elif model_name == 'NODDI':
-        return volume_maps['w_ic.w']
+        return univariate_normal['w_ic.w']
     elif model_name == 'CHARMED_r1':
-        return volume_maps['FR']
+        return univariate_normal['w_res0.w']
+    elif model_name == 'CHARMED_r2':
+        return univariate_normal['w_res0.w']
+    elif model_name == 'CHARMED_r3':
+        return univariate_normal['w_res0.w']
 
 
 def get_protocol_results():
@@ -119,7 +132,7 @@ def get_protocol_results():
                     trial_means = []
                     trial_stds = []
                     for trial_ind in range(nmr_trials):
-                        trial_pjoin = current_pjoin.create_extended('figure_5', str(snr), method_name,
+                        trial_pjoin = current_pjoin.create_extended('figure_4_5', str(snr), method_name,
                                                                     str(trial_ind), model_name, 'samples')
 
                         trial_results = np.squeeze(get_results(model_name, trial_pjoin()))
@@ -251,21 +264,25 @@ for protocol_name in protocols:
     for model_name in model_names:
         plot_protocol_results(protocol_results, protocol_name, model_name)
 
-plt.show()
-#
-# for model_name in model_names:
-#     subprocess.Popen("""
-#         convert +append hcp_mgh_1003_{model_name}.png rheinland_v3a_1_2mm_{model_name}.png {model_name}.png
-#
-#         convert -trim {model_name}.png {model_name}.png
-#         convert -bordercolor white -border 40x30 {model_name}.png {model_name}.png
-#         convert {model_name}.png -splice 0x40 {model_name}.png
-#         convert {model_name}.png -font /usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf \\
-#             -gravity center -pointsize 28 -fill '#282828' -annotate +110-250 '{model_title}' {model_name}.png
-#
-#         """.format(model_name=model_name, model_title=model_titles[model_name]), shell=True,
-#                      cwd='/tmp/sampling_paper/adaptive_proposals/acc_prec/').wait()
-#
-# subprocess.Popen("""
-# convert BallStick_r1.png Tensor.png +append \( NODDI.png CHARMED_r1.png +append \) -append adaptive_proposals_acc_prec.png
-# """, shell=True, cwd='/tmp/sampling_paper/adaptive_proposals/acc_prec/').wait()
+# plt.show()
+
+for model_name in model_names:
+    subprocess.Popen("""
+        convert +append hcp_mgh_1003_{model_name}.png rheinland_v3a_1_2mm_{model_name}.png {model_name}.png
+
+        convert -trim {model_name}.png {model_name}.png
+        convert -bordercolor white -border 40x30 {model_name}.png {model_name}.png
+        convert {model_name}.png -splice 0x40 {model_name}.png
+        convert {model_name}.png -font /usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf \\
+            -gravity center -pointsize 28 -fill '#282828' -annotate +110-250 '{model_title}' {model_name}.png
+
+        """.format(model_name=model_name, model_title=model_titles[model_name]), shell=True,
+                     cwd='/tmp/sampling_paper/adaptive_proposals/acc_prec/').wait()
+
+subprocess.Popen("""
+convert BallStick_r1.png Tensor.png +append \( NODDI.png CHARMED_r1.png +append \) -append adaptive_proposals_acc_prec.png
+""", shell=True, cwd='/tmp/sampling_paper/adaptive_proposals/acc_prec/').wait()
+
+subprocess.Popen("""
+convert BallStick_r2.png BallStick_r3.png +append \( CHARMED_r2.png CHARMED_r3.png +append \) -append adaptive_proposals_acc_prec_multidir.png
+""", shell=True, cwd='/tmp/sampling_paper/adaptive_proposals/acc_prec/').wait()
