@@ -29,7 +29,7 @@ set_matplotlib_font_size(18)
 pjoin = mdt.make_path_joiner('/home/robbert/phd-data/papers/sampling_paper/simulations/')
 nmr_trials = 10
 simulations_unweighted_signal_height = 1e4
-nmr_samples = 10000
+nmr_samples = 100000
 protocols = [
     'hcp_mgh_1003',
     'rheinland_v3a_1_2mm'
@@ -45,13 +45,8 @@ model_names = [
     'CHARMED_r2',
     'CHARMED_r3'
 ]
+ap_methods = ['MWG', 'SCAM', 'FSL', 'AMWG']
 
-ap_methods = [
-    'MWG',
-    'SCAM',
-    'FSL',
-    'AMWG'
-]
 
 protocol_names = {'hcp_mgh_1003': 'HCP MGH',
                   'rheinland_v3a_1_2mm': 'RLS'}
@@ -87,11 +82,10 @@ def get_ess_results():
                     list_of_ideal = []
 
                     for trial_ind in range(nmr_trials):
-                        current_pjoin = pjoin.create_extended(protocol_name, model_name, 'figure_4_5', str(snr),
+                        current_pjoin = pjoin.create_extended(protocol_name, model_name, 'suppl_figure_1_2', str(snr),
                                                               method_name, str(trial_ind), model_name, 'samples')
 
                         ess = mdt.load_nifti(current_pjoin('multivariate_ess', 'MultivariateESS')).get_data()
-                        ess = np.nan_to_num(ess)
                         ess[ess > nmr_samples] = 0
                         list_of_ideal.append(np.squeeze(ess))
 
@@ -142,16 +136,16 @@ def plot_protocol_results(data, model_name):
         ax.set_title(protocol_names[protocol_name])
 
     f.suptitle(model_titles[model_name], y=1)
-    f.savefig(mdt.make_path_joiner('/tmp/sampling_paper/adaptive_proposals/ess/', make_dirs=True)('{}.png'.format(model_name)))
+    f.savefig(mdt.make_path_joiner('/tmp/sampling_paper/suppl_figures/ess/all/', make_dirs=True)('{}.png'.format(model_name)))
 
 
 for model_name in model_names:
     plot_protocol_results(protocol_results, model_name)
-plt.show()
+# plt.show()
 
 for model_name in model_names:
     subprocess.Popen('convert -bordercolor white -border 25x35 {0}.png {0}.png'.format(model_name), shell=True,
-                     cwd='/tmp/sampling_paper/adaptive_proposals/ess/').wait()
+                     cwd='/tmp/sampling_paper/suppl_figures/ess/all/').wait()
 
 commands = """
 convert BallStick_r1.png Tensor.png +append \( NODDI.png CHARMED_r1.png +append \) -append {0}.png
@@ -159,8 +153,8 @@ convert -trim {0}.png {0}.png
 convert {0}.png -splice 0x100 {0}.png
 convert {0}.png -font /usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf -gravity center -pointsize 28 -fill '#282828' -annotate +0-530 'ESS of Adaptive Proposals' {0}.png
 convert -trim {0}.png {0}.png
-""".format('adaptive_proposals_ess')
-subprocess.Popen(commands, shell=True, cwd='/tmp/sampling_paper/adaptive_proposals/ess/').wait()
+""".format('suppl_figures_ess')
+subprocess.Popen(commands, shell=True, cwd='/tmp/sampling_paper/suppl_figures/ess/all/').wait()
 
 commands = """
 convert BallStick_r2.png BallStick_r3.png +append \( CHARMED_r2.png CHARMED_r3.png +append \) -append {0}.png
@@ -168,5 +162,5 @@ convert -trim {0}.png {0}.png
 convert {0}.png -splice 0x100 {0}.png
 convert {0}.png -font /usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf -gravity center -pointsize 28 -fill '#282828' -annotate +0-530 'ESS of Adaptive Proposals' {0}.png
 convert -trim {0}.png {0}.png
-""".format('adaptive_proposals_ess_multidir')
-subprocess.Popen(commands, shell=True, cwd='/tmp/sampling_paper/adaptive_proposals/ess/').wait()
+""".format('suppl_figures_ess_multidir')
+subprocess.Popen(commands, shell=True, cwd='/tmp/sampling_paper/suppl_figures/ess/all/').wait()

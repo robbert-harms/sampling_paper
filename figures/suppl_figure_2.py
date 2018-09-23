@@ -31,12 +31,7 @@ model_names = [
     'CHARMED_r2',
     'CHARMED_r3'
 ]
-ap_methods = [
-    'MWG',
-    'SCAM',
-    'FSL',
-    'AMWG'
-]
+ap_methods = ['MWG', 'SCAM', 'FSL', 'AMWG']
 
 
 protocol_names = {'hcp_mgh_1003': 'HCP MGH',
@@ -102,7 +97,7 @@ def get_results(model_name, samples_dir):
     univariate_normal = mdt.load_volume_maps(samples_dir + '/univariate_normal/')
 
     if model_name == 'BallStick_r1':
-        return univariate_normal['w_stick0.w']
+        return model_defined_maps['FS']
     if model_name == 'BallStick_r2':
         # return model_defined_maps['FS']
         return univariate_normal['w_stick0.w']
@@ -137,7 +132,7 @@ def get_protocol_results():
                     trial_means = []
                     trial_stds = []
                     for trial_ind in range(nmr_trials):
-                        trial_pjoin = current_pjoin.create_extended('figure_4_5', str(snr), method_name,
+                        trial_pjoin = current_pjoin.create_extended('suppl_figure_1_2', str(snr), method_name,
                                                                     str(trial_ind), model_name, 'samples')
 
                         trial_results = np.squeeze(get_results(model_name, trial_pjoin()))
@@ -172,44 +167,44 @@ x_locations = np.array([0, 1, 2, 3])  # the x locations for the groups
 width = 0.35       # the width of the bars
 colors = ['#e6bae6', '#8cb8db', '#fdc830', '#65e065']
 
-offsets = {
-    'BallStick_r1': {
-        'hcp_mgh_1003': {
-            'accuracy': 2.95e2,
-            'precision': True
-        },
-        'rheinland_v3a_1_2mm': {
-            'accuracy': 1.57e2,
-            'precision': 2.08e2,
-        }},
-    'Tensor': {
-        'hcp_mgh_1003': {
-            'accuracy': 22,
-            'precision': 18,
-        },
-        'rheinland_v3a_1_2mm': {
-            'accuracy': 17,
-            'precision': 15,
-        }},
-    'NODDI': {
-        'hcp_mgh_1003': {
-            'accuracy': True,
-            'precision': True,
-        },
-        'rheinland_v3a_1_2mm': {
-            'accuracy': 1.38e2,
-            'precision': 1.75e2,
-        }},
-    'CHARMED_r1': {
-        'hcp_mgh_1003': {
-            'accuracy': 1,
-            'precision': 38,
-        },
-        'rheinland_v3a_1_2mm': {
-            'accuracy': 79,
-            'precision': 34,
-        }},
-}
+# offsets = {
+#     'BallStick_r1': {
+#         'hcp_mgh_1003': {
+#             'accuracy': True,
+#             'precision': True
+#         },
+#         'rheinland_v3a_1_2mm': {
+#             'accuracy': 1.57e2,
+#             'precision': 2.08e2,
+#         }},
+#     'Tensor': {
+#         'hcp_mgh_1003': {
+#             'accuracy': 22,
+#             'precision': 18,
+#         },
+#         'rheinland_v3a_1_2mm': {
+#             'accuracy': 17,
+#             'precision': 15,
+#         }},
+#     'NODDI': {
+#         'hcp_mgh_1003': {
+#             'accuracy': True,
+#             'precision': True,
+#         },
+#         'rheinland_v3a_1_2mm': {
+#             'accuracy': 1.38e2,
+#             'precision': 1.75e2,
+#         }},
+#     'CHARMED_r1': {
+#         'hcp_mgh_1003': {
+#             'accuracy': 1,
+#             'precision': 38,
+#         },
+#         'rheinland_v3a_1_2mm': {
+#             'accuracy': 79,
+#             'precision': 34,
+#         }},
+# }
 
 
 def plot_protocol_results(data, protocol_name, model_name):
@@ -247,7 +242,7 @@ def plot_protocol_results(data, protocol_name, model_name):
         ax.set_ylim((np.min(max_min) - 0.15 * (np.max(max_min) - np.min(max_min)),
                      np.max(max_min) + 0.15 * (np.max(max_min) - np.min(max_min))))
 
-        ax.ticklabel_format(useOffset=offsets[model_name][protocol_name][plot_type], style='sci', scilimits=(-2, 2), axis='y')
+        # ax.ticklabel_format(useOffset=offsets[model_name][protocol_name][plot_type], style='sci', scilimits=(-2, 2), axis='y')
         # ax.yaxis.set_major_formatter(ScalarFormatter(useOffset=False))
         ax.yaxis.set_major_locator(ticker.MaxNLocator(5))
 
@@ -256,20 +251,20 @@ def plot_protocol_results(data, protocol_name, model_name):
         # ax.set_title(plot_type.capitalize())
 
     f.suptitle(model_titles[model_name] + ' - ' + protocol_names[protocol_name], y=0.98, x=0.6)
-    f.savefig(mdt.make_path_joiner('/tmp/sampling_paper/adaptive_proposals/acc_prec/', make_dirs=True)('{}_{}.png'.format(protocol_name, model_name)))
+    f.savefig(mdt.make_path_joiner('/tmp/sampling_paper/suppl_figures/acc_prec/', make_dirs=True)('{}_{}.png'.format(protocol_name, model_name)))
 
     subprocess.Popen("""
     convert -trim {protocol_name}_{model_name}.png {protocol_name}_{model_name}.png
     convert -bordercolor white -border 25x30 {protocol_name}_{model_name}.png {protocol_name}_{model_name}.png
     """.format(protocol_name=protocol_name, model_name=model_name), shell=True,
-                     cwd='/tmp/sampling_paper/adaptive_proposals/acc_prec/').wait()
+                     cwd='/tmp/sampling_paper/suppl_figures/acc_prec/').wait()
 
 
 for protocol_name in protocols:
     for model_name in model_names:
         plot_protocol_results(protocol_results, protocol_name, model_name)
 
-plt.show()
+# plt.show()
 
 for model_name in model_names:
     subprocess.Popen("""
@@ -282,12 +277,12 @@ for model_name in model_names:
             -gravity center -pointsize 28 -fill '#282828' -annotate +110-250 '{model_title}' {model_name}.png
 
         """.format(model_name=model_name, model_title=model_titles[model_name]), shell=True,
-                     cwd='/tmp/sampling_paper/adaptive_proposals/acc_prec/').wait()
+                     cwd='/tmp/sampling_paper/suppl_figures/acc_prec/').wait()
 
 subprocess.Popen("""
-convert BallStick_r1.png Tensor.png +append \( NODDI.png CHARMED_r1.png +append \) -append adaptive_proposals_acc_prec.png
-""", shell=True, cwd='/tmp/sampling_paper/adaptive_proposals/acc_prec/').wait()
+convert BallStick_r1.png Tensor.png +append \( NODDI.png CHARMED_r1.png +append \) -append suppl_figures_acc_prec.png
+""", shell=True, cwd='/tmp/sampling_paper/suppl_figures/acc_prec/').wait()
 
 subprocess.Popen("""
-convert BallStick_r2.png BallStick_r3.png +append \( CHARMED_r2.png CHARMED_r3.png +append \) -append adaptive_proposals_acc_prec_multidir.png
-""", shell=True, cwd='/tmp/sampling_paper/adaptive_proposals/acc_prec/').wait()
+convert BallStick_r2.png BallStick_r3.png +append \( CHARMED_r2.png CHARMED_r3.png +append \) -append suppl_figures_acc_prec_multidir.png
+""", shell=True, cwd='/tmp/sampling_paper/suppl_figures/acc_prec/').wait()
