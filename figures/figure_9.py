@@ -68,16 +68,18 @@ def set_matplotlib_font_size(font_size):
 
 set_matplotlib_font_size(18)
 
-nmr_samples = 10000
+nmr_samples = {
+    'BallStick_r1': 15000,
+    'NODDI': 20000,
+    'Tensor': 20000,
+    'CHARMED_r1': 30000
+}
+
 model_names = [
-    'BallStick_r1',
-    'BallStick_r2',
-    'BallStick_r3',
-    'Tensor',
-    'NODDI',
     'CHARMED_r1',
-    'CHARMED_r2',
-    'CHARMED_r3'
+    'NODDI',
+    'BallStick_r1',
+    'Tensor'
 ]
 
 
@@ -93,8 +95,8 @@ def func(subject_info, model_name, samples_output_dir):
 
     nmr_params = len(mdt.get_model(model_name)().get_free_param_names())
 
-    more_samples_required = (minimum_multivariate_ess(nmr_params, alpha=0.05, epsilon=0.1) - ess) / (ess / nmr_samples)
-    ideal_nmr_samples = nmr_samples + more_samples_required
+    more_samples_required = (minimum_multivariate_ess(nmr_params, alpha=0.05, epsilon=0.1) - ess) / (ess / nmr_samples[model_name])
+    ideal_nmr_samples = nmr_samples[model_name] + more_samples_required
 
     print('subject_id, model_name, ess, more_samples_required, ideal_nmr_samples')
     print(subject_id, model_name, ess, more_samples_required, ideal_nmr_samples)
@@ -104,23 +106,23 @@ def func(subject_info, model_name, samples_output_dir):
 mgh_results = {}
 rls_results = {}
 
-# for model_name in model_names:
-#     ideal_samples_per_subject = mdt.batch_apply(
-#         func, '/home/robbert/phd-data/rheinland/',
-#         batch_profile=RheinLandBatchProfile(resolutions_to_use=['data_ms20']),
-#         subjects_selection=SelectedSubjects(indices=range(10)),
-#         extra_args=[model_name,
-#                     '/home/robbert/phd-data/papers/sampling_paper/ess/rheinland/'
-#                     ])
-#     rls_results[model_name] = np.array([float(v) for v in ideal_samples_per_subject.values()])
-#
-#     ideal_samples_per_subject = mdt.batch_apply(
-#         func, '/home/robbert/phd-data/hcp_mgh/',
-#         batch_profile=mdt.get_batch_profile('HCP_MGH')(),
-#         subjects_selection=SelectedSubjects(indices=range(10)),
-#         extra_args=[model_name,
-#                     '/home/robbert/phd-data/papers/sampling_paper/ess/hcp_mgh/'])
-#     mgh_results[model_name] = np.array([float(v) for v in ideal_samples_per_subject.values()])
+for model_name in model_names:
+    ideal_samples_per_subject = mdt.batch_apply(
+        func, '/home/robbert/phd-data/rheinland/',
+        batch_profile=RheinLandBatchProfile(resolutions_to_use=['data_ms20']),
+        subjects_selection=SelectedSubjects(indices=range(10)),
+        extra_args=[model_name,
+                    '/home/robbert/phd-data/papers/sampling_paper/ess/rheinland/'
+                    ])
+    rls_results[model_name] = np.array([float(v) for v in ideal_samples_per_subject.values()])
+
+    ideal_samples_per_subject = mdt.batch_apply(
+        func, '/home/robbert/phd-data/hcp_mgh/',
+        batch_profile=mdt.get_batch_profile('HCP_MGH')(),
+        subjects_selection=SelectedSubjects(indices=range(10)),
+        extra_args=[model_name,
+                    '/home/robbert/phd-data/papers/sampling_paper/ess/hcp_mgh/'])
+    mgh_results[model_name] = np.array([float(v) for v in ideal_samples_per_subject.values()])
 
 # plt.show()
 # exit(0)

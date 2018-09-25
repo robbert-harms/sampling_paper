@@ -42,8 +42,8 @@ model_names = [
     'Tensor',
     'NODDI',
     'CHARMED_r1',
-    'CHARMED_r2',
-    'CHARMED_r3'
+    # 'CHARMED_r2',
+    # 'CHARMED_r3'
 ]
 
 ap_methods = [

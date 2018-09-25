@@ -16,17 +16,18 @@ __licence__ = 'LGPL v3'
 
 pjoin = mdt.make_path_joiner(r'/home/robbert/phd-data/papers/sampling_paper/ess/')
 
-nmr_samples = 50000
+nmr_samples = {
+    'BallStick_r1': 15000,
+    'NODDI': 20000,
+    'Tensor': 20000,
+    'CHARMED_r1': 30000
+}
 
 model_names = [
-    'CHARMED_r3',
-    'CHARMED_r2',
-    'CHARMED_r1'
-    'BallStick_r3',
-    'BallStick_r2',
+    'CHARMED_r1',
+    'NODDI',
     'BallStick_r1',
-    'Tensor',
-    'NODDI'
+    'Tensor'
 ]
 
 
@@ -94,7 +95,7 @@ def func(subject_info, model_name, opt_output_dir, samples_output_dir):
         mdt.sample_model(model_name,
                          wm_input_data,
                          samples_output_dir + '/' + subject_id,
-                         nmr_samples=nmr_samples,
+                         nmr_samples=nmr_samples[model_name],
                          initialization_data={'inits': starting_point},
                          store_samples=False,
                          post_processing={'multivariate_ess': True,

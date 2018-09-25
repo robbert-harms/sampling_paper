@@ -28,8 +28,8 @@ model_names = [
     'Tensor',
     'NODDI',
     'CHARMED_r1',
-    'CHARMED_r2',
-    'CHARMED_r3'
+    # 'CHARMED_r2',
+    # 'CHARMED_r3'
 ]
 ap_methods = [
     'MWG',
@@ -84,17 +84,17 @@ def get_ground_truth_measures(model_name, original_parameters):
     elif model_name == 'BallStick_r1':
         return original_parameters[..., 1]
     elif model_name == 'BallStick_r2':
-        return original_parameters[..., 1]
+        return original_parameters[..., 1]# + original_parameters[..., 4]
     elif model_name == 'BallStick_r3':
-        return original_parameters[..., 1]
+        return original_parameters[..., 1]# + original_parameters[..., 4] + original_parameters[..., 7]
     elif model_name == 'NODDI':
         return original_parameters[..., 1]
     elif model_name == 'CHARMED_r1':
         return original_parameters[..., 7]
     elif model_name == 'CHARMED_r2':
-        return original_parameters[..., 7]
+        return original_parameters[..., 7]# + original_parameters[..., 11]
     elif model_name == 'CHARMED_r3':
-        return original_parameters[..., 7]
+        return original_parameters[..., 7]# + original_parameters[..., 11] + original_parameters[..., 15]
 
 
 def get_results(model_name, samples_dir):
@@ -102,6 +102,7 @@ def get_results(model_name, samples_dir):
     univariate_normal = mdt.load_volume_maps(samples_dir + '/univariate_normal/')
 
     if model_name == 'BallStick_r1':
+        # return model_defined_maps['FS']
         return univariate_normal['w_stick0.w']
     if model_name == 'BallStick_r2':
         # return model_defined_maps['FS']
@@ -114,10 +115,13 @@ def get_results(model_name, samples_dir):
     elif model_name == 'NODDI':
         return univariate_normal['w_ic.w']
     elif model_name == 'CHARMED_r1':
+        # return model_defined_maps['FR']
         return univariate_normal['w_res0.w']
     elif model_name == 'CHARMED_r2':
+        # return model_defined_maps['FR']
         return univariate_normal['w_res0.w']
     elif model_name == 'CHARMED_r3':
+        # return model_defined_maps['FR']
         return univariate_normal['w_res0.w']
 
 
@@ -149,7 +153,7 @@ def get_protocol_results():
                     model_results[model_name] = {}
                     model_results[model_name]['accuracy'] = (
                         float(np.mean(1 / np.array(trial_means))),
-                        float(np.std(1 / np.array(trial_means)) / nmr_trials)
+                        float(np.std(1 / np.array(trial_means)) / np.sqrt(nmr_trials))
                     )
 
                     prec = 1 / np.array(trial_stds)
@@ -157,7 +161,7 @@ def get_protocol_results():
 
                     model_results[model_name]['precision'] = (
                         float(np.mean(prec)),
-                        float(np.std(prec) / nmr_trials)
+                        float(np.std(prec) / np.sqrt(nmr_trials))
                     )
 
             method_results[method_name] = model_results
@@ -247,7 +251,7 @@ def plot_protocol_results(data, protocol_name, model_name):
         ax.set_ylim((np.min(max_min) - 0.15 * (np.max(max_min) - np.min(max_min)),
                      np.max(max_min) + 0.15 * (np.max(max_min) - np.min(max_min))))
 
-        ax.ticklabel_format(useOffset=offsets[model_name][protocol_name][plot_type], style='sci', scilimits=(-2, 2), axis='y')
+        # ax.ticklabel_format(useOffset=offsets[model_name][protocol_name][plot_type], style='sci', scilimits=(-2, 2), axis='y')
         # ax.yaxis.set_major_formatter(ScalarFormatter(useOffset=False))
         ax.yaxis.set_major_locator(ticker.MaxNLocator(5))
 
@@ -269,7 +273,7 @@ for protocol_name in protocols:
     for model_name in model_names:
         plot_protocol_results(protocol_results, protocol_name, model_name)
 
-plt.show()
+# plt.show()
 
 for model_name in model_names:
     subprocess.Popen("""
