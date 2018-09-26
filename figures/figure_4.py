@@ -26,10 +26,10 @@ def set_matplotlib_font_size(font_size):
 
 set_matplotlib_font_size(18)
 
-pjoin = mdt.make_path_joiner('/home/robbert/phd-data/papers/sampling_paper/simulations/')
-nmr_trials = 10
+pjoin = mdt.make_path_joiner('/mnt/storage2/robbert/papers/sampling_papers/simulations/')
+nmr_trials = 1
 simulations_unweighted_signal_height = 1e4
-nmr_samples = 10000
+nmr_samples = 20000
 protocols = [
     'hcp_mgh_1003',
     'rheinland_v3a_1_2mm'
@@ -42,8 +42,8 @@ model_names = [
     'Tensor',
     'NODDI',
     'CHARMED_r1',
-    # 'CHARMED_r2',
-    # 'CHARMED_r3'
+    'CHARMED_r2',
+    'CHARMED_r3'
 ]
 
 ap_methods = [
@@ -82,6 +82,10 @@ def get_ess_results():
         for method_name in ap_methods:
             model_results = {}
             for model_name in model_names:
+
+                if protocol_name == 'rheinland_v3a_1_2mm' and model_name.startswith('CHARMED'):
+                    continue
+
                 for snr in noise_snrs:
 
                     list_of_ideal = []
@@ -116,6 +120,9 @@ def plot_protocol_results(data, model_name):
     f.subplots_adjust(wspace=0.4, right=0.98, left=0.15, top=0.88, bottom=0.18)
 
     for ind, protocol_name in enumerate(protocols):
+        if protocol_name == 'rheinland_v3a_1_2mm' and model_name.startswith('CHARMED'):
+            continue
+
         ax = axarr[ind]
         bars = []
         max_min = []

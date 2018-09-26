@@ -13,8 +13,8 @@ __maintainer__ = "Robbert Harms"
 __email__ = "robbert.harms@maastrichtuniversity.nl"
 
 
-pjoin = mdt.make_path_joiner('/home/robbert/phd-data/papers/sampling_paper/simulations/')
-nmr_trials = 10
+pjoin = mdt.make_path_joiner('/mnt/storage2/robbert/papers/sampling_papers/simulations/')
+nmr_trials = 1
 simulations_unweighted_signal_height = 1e4
 protocols = [
     'hcp_mgh_1003',
@@ -28,8 +28,8 @@ model_names = [
     'Tensor',
     'NODDI',
     'CHARMED_r1',
-    # 'CHARMED_r2',
-    # 'CHARMED_r3'
+    'CHARMED_r2',
+    'CHARMED_r3'
 ]
 ap_methods = [
     'MWG',
@@ -132,6 +132,10 @@ def get_protocol_results():
         for method_name in ap_methods:
             model_results = {}
             for model_name in model_names:
+
+                if protocol_name == 'rheinland_v3a_1_2mm' and model_name.startswith('CHARMED'):
+                    continue
+
                 for snr in noise_snrs:
                     current_pjoin = pjoin.create_extended(protocol_name, model_name)
 
@@ -271,9 +275,11 @@ def plot_protocol_results(data, protocol_name, model_name):
 
 for protocol_name in protocols:
     for model_name in model_names:
+        if protocol_name == 'rheinland_v3a_1_2mm' and model_name.startswith('CHARMED'):
+            continue
         plot_protocol_results(protocol_results, protocol_name, model_name)
 
-# plt.show()
+plt.show()
 
 for model_name in model_names:
     subprocess.Popen("""
