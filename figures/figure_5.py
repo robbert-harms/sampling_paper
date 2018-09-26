@@ -13,7 +13,7 @@ __maintainer__ = "Robbert Harms"
 __email__ = "robbert.harms@maastrichtuniversity.nl"
 
 
-pjoin = mdt.make_path_joiner('/mnt/storage2/robbert/papers/sampling_papers/simulations/')
+pjoin = mdt.make_path_joiner('/mnt/storage2/robbert/papers/sampling_papers/simulations2/')
 nmr_trials = 1
 simulations_unweighted_signal_height = 1e4
 protocols = [
@@ -22,14 +22,14 @@ protocols = [
 ]
 noise_snrs = [30]
 model_names = [
-    'BallStick_r1',
-    'BallStick_r2',
-    'BallStick_r3',
-    'Tensor',
-    'NODDI',
+    # 'BallStick_r1',
+    # 'BallStick_r2',
+    # 'BallStick_r3',
+    # 'Tensor',
+    # 'NODDI',
     'CHARMED_r1',
     'CHARMED_r2',
-    'CHARMED_r3'
+    # 'CHARMED_r3'
 ]
 ap_methods = [
     'MWG',
@@ -101,9 +101,14 @@ def get_results(model_name, samples_dir):
     model_defined_maps = mdt.load_volume_maps(samples_dir + '/model_defined_maps/')
     univariate_normal = mdt.load_volume_maps(samples_dir + '/univariate_normal/')
 
+    s = mdt.load_samples(samples_dir)
+
     if model_name == 'BallStick_r1':
         # return model_defined_maps['FS']
         return univariate_normal['w_stick0.w']
+
+        # return np.mean(s['w_stick0.w'][:, 0:10000], axis=1)
+
     if model_name == 'BallStick_r2':
         # return model_defined_maps['FS']
         return univariate_normal['w_stick0.w']
