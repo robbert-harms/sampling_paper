@@ -13,8 +13,8 @@ __maintainer__ = "Robbert Harms"
 __email__ = "robbert.harms@maastrichtuniversity.nl"
 
 
-pjoin = mdt.make_path_joiner('/mnt/storage2/robbert/papers/sampling_papers/simulations2/')
-nmr_trials = 1
+pjoin = mdt.make_path_joiner('/mnt/storage2/robbert/papers/sampling_papers/simulations/')
+nmr_trials = 10
 simulations_unweighted_signal_height = 1e4
 protocols = [
     'hcp_mgh_1003',
@@ -22,14 +22,14 @@ protocols = [
 ]
 noise_snrs = [30]
 model_names = [
-    # 'BallStick_r1',
-    # 'BallStick_r2',
-    # 'BallStick_r3',
-    # 'Tensor',
-    # 'NODDI',
+    'BallStick_r1',
+    'BallStick_r2',
+    'BallStick_r3',
+    'Tensor',
+    'NODDI',
     'CHARMED_r1',
     'CHARMED_r2',
-    # 'CHARMED_r3'
+    'CHARMED_r3'
 ]
 ap_methods = [
     'MWG',
@@ -84,49 +84,38 @@ def get_ground_truth_measures(model_name, original_parameters):
     elif model_name == 'BallStick_r1':
         return original_parameters[..., 1]
     elif model_name == 'BallStick_r2':
-        return original_parameters[..., 1]# + original_parameters[..., 4]
+        return original_parameters[..., 1]
     elif model_name == 'BallStick_r3':
-        return original_parameters[..., 1]# + original_parameters[..., 4] + original_parameters[..., 7]
+        return original_parameters[..., 1]
     elif model_name == 'NODDI':
         return original_parameters[..., 1]
     elif model_name == 'CHARMED_r1':
         return original_parameters[..., 7]
     elif model_name == 'CHARMED_r2':
-        return original_parameters[..., 7]# + original_parameters[..., 11]
+        return original_parameters[..., 7]
     elif model_name == 'CHARMED_r3':
-        return original_parameters[..., 7]# + original_parameters[..., 11] + original_parameters[..., 15]
+        return original_parameters[..., 7]
 
 
 def get_results(model_name, samples_dir):
     model_defined_maps = mdt.load_volume_maps(samples_dir + '/model_defined_maps/')
     univariate_normal = mdt.load_volume_maps(samples_dir + '/univariate_normal/')
 
-    s = mdt.load_samples(samples_dir)
-
     if model_name == 'BallStick_r1':
-        # return model_defined_maps['FS']
         return univariate_normal['w_stick0.w']
-
-        # return np.mean(s['w_stick0.w'][:, 0:10000], axis=1)
-
     if model_name == 'BallStick_r2':
-        # return model_defined_maps['FS']
         return univariate_normal['w_stick0.w']
     if model_name == 'BallStick_r3':
-        # return model_defined_maps['FS']
         return univariate_normal['w_stick0.w']
     elif model_name == 'Tensor':
         return model_defined_maps['Tensor.FA']
     elif model_name == 'NODDI':
         return univariate_normal['w_ic.w']
     elif model_name == 'CHARMED_r1':
-        # return model_defined_maps['FR']
         return univariate_normal['w_res0.w']
     elif model_name == 'CHARMED_r2':
-        # return model_defined_maps['FR']
         return univariate_normal['w_res0.w']
     elif model_name == 'CHARMED_r3':
-        # return model_defined_maps['FR']
         return univariate_normal['w_res0.w']
 
 
@@ -155,6 +144,8 @@ def get_protocol_results():
 
                         trial_results = np.squeeze(get_results(model_name, trial_pjoin()))
                         trial_diffs = np.abs(trial_results - ground_truth_map)
+
+                        trial_diffs = trial_diffs[np.abs(trial_diffs - np.mean(trial_diffs)) > 2 * np.std(trial_diffs)]
 
                         trial_means.append(np.mean(trial_diffs))
                         trial_stds.append(np.std(trial_diffs))

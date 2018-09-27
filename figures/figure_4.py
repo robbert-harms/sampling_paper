@@ -26,8 +26,8 @@ def set_matplotlib_font_size(font_size):
 
 set_matplotlib_font_size(18)
 
-pjoin = mdt.make_path_joiner('/mnt/storage2/robbert/papers/sampling_papers/simulations2/')
-nmr_trials = 1
+pjoin = mdt.make_path_joiner('/home/robbert/phd-data/papers/sampling_paper/simulations/')
+nmr_trials = 10
 simulations_unweighted_signal_height = 1e4
 nmr_samples = 10000
 protocols = [
@@ -36,14 +36,14 @@ protocols = [
 ]
 noise_snrs = [30]
 model_names = [
-    # 'BallStick_r1',
-    # 'BallStick_r2',
-    # 'BallStick_r3',
-    # 'Tensor',
-    # 'NODDI',
+    'BallStick_r1',
+    'BallStick_r2',
+    'BallStick_r3',
+    'Tensor',
+    'NODDI',
     'CHARMED_r1',
     'CHARMED_r2',
-    # 'CHARMED_r3'
+    'CHARMED_r3'
 ]
 
 ap_methods = [

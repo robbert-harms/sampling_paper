@@ -101,6 +101,7 @@ def prepare_charmed_r1_params(params_cube):
     params_cube[..., param_names.index('Tensor.theta')] = params_cube[
         ..., param_names.index('CHARMEDRestricted0.theta')]
     params_cube[..., param_names.index('Tensor.phi')] = params_cube[..., param_names.index('CHARMEDRestricted0.phi')]
+    params_cube[:, 1:4] = np.sort(params_cube[:, 1:4], axis=1)[:, ::-1]
 
 
 def prepare_ballstick2_params(params_cube):
@@ -190,8 +191,8 @@ simulations = {
                               'Tensor.theta', 'Tensor.phi', 'Tensor.psi', 'w_res0.w',
                               'CHARMEDRestricted0.d', 'CHARMEDRestricted0.theta', 'CHARMEDRestricted0.phi'],
         prepare_params_cube_cb=prepare_charmed_r1_params,
-        lower_bounds=[1e3, 1e-9, 3e-10, 3e-10, 0, 0, 0, 0.2, 3e-10, 0, 0],
-        upper_bounds=[1e9, 5e-9, 5e-9, 3e-9, np.pi, np.pi, np.pi, 0.8, 3e-9, np.pi, np.pi],
+        lower_bounds=[1e3, 5e-11, 5e-11, 5e-11, 0, 0, 0, 0.2, 5e-11, 0, 0],
+        upper_bounds=[1e9, 5e-9, 5e-9, 5e-9, np.pi, np.pi, np.pi, 0.8, 5e-9, np.pi, np.pi],
     ),
     'CHARMED_r2': dict(
         # Available parameters:
@@ -203,8 +204,8 @@ simulations = {
                               'CHARMEDRestricted0.d', 'CHARMEDRestricted0.theta', 'CHARMEDRestricted0.phi', 'w_res1.w',
                               'CHARMEDRestricted1.d', 'CHARMEDRestricted1.theta', 'CHARMEDRestricted1.phi'],
         prepare_params_cube_cb=prepare_charmed2_params,
-        lower_bounds=[1e3, 1e-9, 3e-10, 3e-10, 0, 0, 0, 0.2, 3e-10, 0, 0, 0.2, 3e-10, 0, 0],
-        upper_bounds=[1e9, 5e-9, 5e-9, 3e-9, np.pi, np.pi, np.pi, 0.8, 3e-9, np.pi, np.pi, 0.8, 3e-9, np.pi, np.pi],
+        lower_bounds=[1e3, 5e-11, 5e-11, 5e-11, 0, 0, 0, 0.2, 5e-11, 0, 0, 0.2, 5e-11, 0, 0],
+        upper_bounds=[1e9, 5e-9, 5e-9, 5e-9, np.pi, np.pi, np.pi, 0.8, 3e-9, np.pi, np.pi, 0.8, 3e-9, np.pi, np.pi],
     ),
     'CHARMED_r3': dict(
         # Available parameters:
@@ -218,8 +219,8 @@ simulations = {
                               'CHARMEDRestricted1.d', 'CHARMEDRestricted1.theta', 'CHARMEDRestricted1.phi', 'w_res2.w',
                               'CHARMEDRestricted2.d', 'CHARMEDRestricted2.theta', 'CHARMEDRestricted2.phi'],
         prepare_params_cube_cb=prepare_charmed3_params,
-        lower_bounds=[1e3, 1e-9, 3e-10, 3e-10, 0, 0, 0, 0.2, 3e-10, 0, 0, 0.2, 3e-10, 0, 0, 0.2, 3e-10, 0, 0],
-        upper_bounds=[1e9, 5e-9, 5e-9, 3e-9, np.pi, np.pi, np.pi, 0.8, 3e-9, np.pi, np.pi, 0.8, 3e-9, np.pi, np.pi,
+        lower_bounds=[1e3, 5e-11, 5e-11, 5e-11, 0, 0, 0, 0.2, 5e-11, 0, 0, 0.2, 5e-11, 0, 0, 0.2, 5e-11, 0, 0],
+        upper_bounds=[1e9, 5e-9, 5e-9, 5e-9, np.pi, np.pi, np.pi, 0.8, 5e-9, np.pi, np.pi, 0.8, 5e-9, np.pi, np.pi,
                       0.8, 3e-9, np.pi, np.pi],
     ),
     'Tensor': dict(
@@ -228,8 +229,8 @@ simulations = {
         randomize_parameters=['Tensor.d', 'Tensor.dperp0', 'Tensor.dperp1',
                               'Tensor.theta', 'Tensor.phi', 'Tensor.psi'],
         prepare_params_cube_cb=prepare_tensor_cb,
-        lower_bounds=[1e2, 1e-9, 3e-10, 3e-10, 0, 0, 0],
-        upper_bounds=[1e5, 5e-9, 5e-9, 3e-9, np.pi, np.pi, np.pi]
+        lower_bounds=[1e2, 5e-11, 5e-11, 5e-11, 0, 0, 0],
+        upper_bounds=[1e5, 5e-9, 5e-9, 5e-9, np.pi, np.pi, np.pi]
     )
 }
 
