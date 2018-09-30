@@ -27,7 +27,7 @@ def set_matplotlib_font_size(font_size):
 set_matplotlib_font_size(18)
 
 pjoin = mdt.make_path_joiner('/home/robbert/phd-data/papers/sampling_paper/simulations/')
-nmr_trials = 10
+nmr_trials = 4
 simulations_unweighted_signal_height = 1e4
 nmr_samples = 10000
 protocols = [
@@ -92,7 +92,7 @@ def get_ess_results():
 
                     for trial_ind in range(nmr_trials):
                         current_pjoin = pjoin.create_extended(protocol_name, model_name, 'figure_4_5', str(snr),
-                                                              method_name, str(trial_ind), model_name, 'samples')
+                                                              method_name, str(trial_ind), model_name, 'samples', 'first_10000')
 
                         ess = mdt.load_nifti(current_pjoin('multivariate_ess', 'MultivariateESS')).get_data()
                         ess = np.nan_to_num(ess)

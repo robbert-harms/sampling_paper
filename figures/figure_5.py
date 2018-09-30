@@ -13,8 +13,8 @@ __maintainer__ = "Robbert Harms"
 __email__ = "robbert.harms@maastrichtuniversity.nl"
 
 
-pjoin = mdt.make_path_joiner('/mnt/storage2/robbert/papers/sampling_papers/simulations/')
-nmr_trials = 10
+pjoin = mdt.make_path_joiner('/home/robbert/phd-data/papers/sampling_paper/simulations/')
+nmr_trials = 4
 simulations_unweighted_signal_height = 1e4
 protocols = [
     'hcp_mgh_1003',
@@ -22,14 +22,14 @@ protocols = [
 ]
 noise_snrs = [30]
 model_names = [
-    'BallStick_r1',
-    'BallStick_r2',
-    'BallStick_r3',
-    'Tensor',
+    # 'BallStick_r1',
+    # 'BallStick_r2',
+    # 'BallStick_r3',
+    # 'Tensor',
     'NODDI',
-    'CHARMED_r1',
-    'CHARMED_r2',
-    'CHARMED_r3'
+    # 'CHARMED_r1',
+    # 'CHARMED_r2',
+    # 'CHARMED_r3'
 ]
 ap_methods = [
     'MWG',
@@ -77,6 +77,7 @@ set_matplotlib_font_size(18)
 
 def get_ground_truth_measures(model_name, original_parameters):
     if model_name == 'Tensor':
+        # return original_parameters[..., 1]
         return DTIMeasures.fractional_anisotropy(
             original_parameters[..., 1],
             original_parameters[..., 2],
@@ -109,6 +110,7 @@ def get_results(model_name, samples_dir):
         return univariate_normal['w_stick0.w']
     elif model_name == 'Tensor':
         return model_defined_maps['Tensor.FA']
+        # return univariate_normal['Tensor.d']
     elif model_name == 'NODDI':
         return univariate_normal['w_ic.w']
     elif model_name == 'CHARMED_r1':
@@ -140,12 +142,14 @@ def get_protocol_results():
                     trial_stds = []
                     for trial_ind in range(nmr_trials):
                         trial_pjoin = current_pjoin.create_extended('figure_4_5', str(snr), method_name,
-                                                                    str(trial_ind), model_name, 'samples')
+                                                                    str(trial_ind), model_name, 'samples', 'first_10000')
 
                         trial_results = np.squeeze(get_results(model_name, trial_pjoin()))
                         trial_diffs = np.abs(trial_results - ground_truth_map)
 
-                        trial_diffs = trial_diffs[np.abs(trial_diffs - np.mean(trial_diffs)) > 2 * np.std(trial_diffs)]
+                        # print(np.where(np.abs(trial_diffs - np.mean(trial_diffs)) > 3 * np.std(trial_diffs))[0])
+                        # print('Nmr outliers', 100 * len(np.where(np.abs(trial_diffs - np.mean(trial_diffs)) > 2 * np.std(trial_diffs))[0]) / trial_diffs.shape[0])
+                        # trial_diffs = trial_diffs[np.abs(trial_diffs - np.mean(trial_diffs)) > 2 * np.std(trial_diffs)]
 
                         trial_means.append(np.mean(trial_diffs))
                         trial_stds.append(np.std(trial_diffs))

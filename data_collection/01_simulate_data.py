@@ -181,7 +181,7 @@ simulations = {
         randomize_parameters=['w_ic.w', 'NODDI_IC.theta', 'NODDI_IC.phi', 'NODDI_IC.kappa', 'w_ec.w'],
         prepare_params_cube_cb=prepare_noddi_params,
         lower_bounds=[1e2, 0.2, 0, 0, 0.1, 0.2],
-        upper_bounds=[1e5, 0.8, np.pi, np.pi, 2 * np.pi, 0.8]
+        upper_bounds=[1e5, 0.8, np.pi, np.pi, 60, 0.8]
     ),
     'CHARMED_r1': dict(
         # Available parameters:
@@ -204,8 +204,8 @@ simulations = {
                               'CHARMEDRestricted0.d', 'CHARMEDRestricted0.theta', 'CHARMEDRestricted0.phi', 'w_res1.w',
                               'CHARMEDRestricted1.d', 'CHARMEDRestricted1.theta', 'CHARMEDRestricted1.phi'],
         prepare_params_cube_cb=prepare_charmed2_params,
-        lower_bounds=[1e3, 5e-11, 5e-11, 5e-11, 0, 0, 0, 0.2, 5e-11, 0, 0, 0.2, 5e-11, 0, 0],
-        upper_bounds=[1e9, 5e-9, 5e-9, 5e-9, np.pi, np.pi, np.pi, 0.8, 3e-9, np.pi, np.pi, 0.8, 3e-9, np.pi, np.pi],
+        lower_bounds=[1e3, 5e-11, 5e-11, 5e-11,    0,      0,     0, 0.2, 5e-11,     0,      0, 0.2, 5e-11,    0,    0],
+        upper_bounds=[1e9, 5e-9,  5e-9,   5e-9, np.pi, np.pi, np.pi, 0.8, 3e-9,  np.pi, np.pi, 0.8, 3e-9, np.pi, np.pi],
     ),
     'CHARMED_r3': dict(
         # Available parameters:

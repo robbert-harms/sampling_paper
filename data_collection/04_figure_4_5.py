@@ -8,15 +8,15 @@ __maintainer__ = "Robbert Harms"
 __email__ = "robbert.harms@maastrichtuniversity.nl"
 
 pjoin = mdt.make_path_joiner('/home/robbert/phd-data/papers/sampling_paper/simulations/')
-nmr_trials = 1
+nmr_trials = 10
 simulations_unweighted_signal_height = 1e4
 nmr_samples = 20000
 protocols = ['hcp_mgh_1003', 'rheinland_v3a_1_2mm']
 noise_snrs = [30]
-model_names = ['BallStick_r1',
-               # 'BallStick_r2', 'BallStick_r3', 'NODDI', 'Tensor',
-               # 'CHARMED_r1', 'CHARMED_r2', 'CHARMED_r3'
-               ]
+# model_names = ['BallStick_r1', 'BallStick_r2', 'BallStick_r3', 'NODDI', 'Tensor',
+#                'CHARMED_r1', 'CHARMED_r2', 'CHARMED_r3'
+#                ]
+model_names = ['NODDI']
 ap_methods = ['AMWG', 'MWG', 'FSL', 'SCAM']
 
 
