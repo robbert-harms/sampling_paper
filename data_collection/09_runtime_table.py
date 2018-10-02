@@ -99,7 +99,7 @@ def func(subject_info, model_name, dataset_name, opt_output_dir, samples_output_
                          method='AMWG',
                          initialization_data={'inits': starting_point},
                          store_samples=False,
-                         nmr_samples=10000,
+                         nmr_samples=nmr_samples[model_name],
                          burnin=0,
                          thinning=0,
                          cl_device_ind=device_ind,
@@ -116,14 +116,17 @@ gpu_device_ind = 1
 
 model_names = [
     'BallStick_r1',
-    'BallStick_r2',
-    'BallStick_r3',
     'NODDI',
     'Tensor',
     'CHARMED_r1',
-    'CHARMED_r2',
-    'CHARMED_r3'
 ]
+
+nmr_samples = {
+    'BallStick_r1': 15000,
+    'NODDI': 20000,
+    'Tensor': 20000,
+    'CHARMED_r1': 30000
+}
 
 
 for model_name in model_names:

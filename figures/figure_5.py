@@ -1,6 +1,8 @@
 import subprocess
 
 from matplotlib import ticker
+from matplotlib.ticker import ScalarFormatter
+
 import mdt
 from mdt.lib.post_processing import DTIMeasures
 import numpy as np
@@ -14,22 +16,23 @@ __email__ = "robbert.harms@maastrichtuniversity.nl"
 
 
 pjoin = mdt.make_path_joiner('/home/robbert/phd-data/papers/sampling_paper/simulations/')
-nmr_trials = 4
+nmr_trials = 10
 simulations_unweighted_signal_height = 1e4
+for_supplementary = True
 protocols = [
     'hcp_mgh_1003',
     'rheinland_v3a_1_2mm'
 ]
 noise_snrs = [30]
 model_names = [
-    # 'BallStick_r1',
-    # 'BallStick_r2',
-    # 'BallStick_r3',
-    # 'Tensor',
+    'BallStick_r1',
+    'BallStick_r2',
+    'BallStick_r3',
+    'Tensor',
     'NODDI',
-    # 'CHARMED_r1',
-    # 'CHARMED_r2',
-    # 'CHARMED_r3'
+    'CHARMED_r1',
+    'CHARMED_r2',
+    'CHARMED_r3'
 ]
 ap_methods = [
     'MWG',
@@ -77,7 +80,6 @@ set_matplotlib_font_size(18)
 
 def get_ground_truth_measures(model_name, original_parameters):
     if model_name == 'Tensor':
-        # return original_parameters[..., 1]
         return DTIMeasures.fractional_anisotropy(
             original_parameters[..., 1],
             original_parameters[..., 2],
@@ -85,17 +87,17 @@ def get_ground_truth_measures(model_name, original_parameters):
     elif model_name == 'BallStick_r1':
         return original_parameters[..., 1]
     elif model_name == 'BallStick_r2':
-        return original_parameters[..., 1]
+        return np.max(original_parameters[..., (1, 4)], axis=3)
     elif model_name == 'BallStick_r3':
-        return original_parameters[..., 1]
+        return np.max(original_parameters[..., (1, 4, 7)], axis=3)
     elif model_name == 'NODDI':
         return original_parameters[..., 1]
     elif model_name == 'CHARMED_r1':
         return original_parameters[..., 7]
     elif model_name == 'CHARMED_r2':
-        return original_parameters[..., 7]
+        return np.max(original_parameters[..., (7, 11)], axis=3)
     elif model_name == 'CHARMED_r3':
-        return original_parameters[..., 7]
+        return np.max(original_parameters[..., (7, 11, 15)], axis=3)
 
 
 def get_results(model_name, samples_dir):
@@ -110,7 +112,6 @@ def get_results(model_name, samples_dir):
         return univariate_normal['w_stick0.w']
     elif model_name == 'Tensor':
         return model_defined_maps['Tensor.FA']
-        # return univariate_normal['Tensor.d']
     elif model_name == 'NODDI':
         return univariate_normal['w_ic.w']
     elif model_name == 'CHARMED_r1':
@@ -141,15 +142,16 @@ def get_protocol_results():
                     trial_means = []
                     trial_stds = []
                     for trial_ind in range(nmr_trials):
-                        trial_pjoin = current_pjoin.create_extended('figure_4_5', str(snr), method_name,
-                                                                    str(trial_ind), model_name, 'samples', 'first_10000')
+                        if for_supplementary:
+                            trial_pjoin = pjoin.create_extended(protocol_name, model_name, 'figure_4_5', str(snr),
+                                                                method_name, str(trial_ind), model_name, 'samples')
+                        else:
+                            trial_pjoin = pjoin.create_extended(protocol_name, model_name, 'figure_4_5', str(snr),
+                                                                method_name, str(trial_ind), model_name, 'samples',
+                                                                'first_10000')
 
                         trial_results = np.squeeze(get_results(model_name, trial_pjoin()))
                         trial_diffs = np.abs(trial_results - ground_truth_map)
-
-                        # print(np.where(np.abs(trial_diffs - np.mean(trial_diffs)) > 3 * np.std(trial_diffs))[0])
-                        # print('Nmr outliers', 100 * len(np.where(np.abs(trial_diffs - np.mean(trial_diffs)) > 2 * np.std(trial_diffs))[0]) / trial_diffs.shape[0])
-                        # trial_diffs = trial_diffs[np.abs(trial_diffs - np.mean(trial_diffs)) > 2 * np.std(trial_diffs)]
 
                         trial_means.append(np.mean(trial_diffs))
                         trial_stds.append(np.std(trial_diffs))
@@ -179,46 +181,6 @@ protocol_results = get_protocol_results()
 x_locations = np.array([0, 1, 2, 3])  # the x locations for the groups
 width = 0.35       # the width of the bars
 colors = ['#e6bae6', '#8cb8db', '#fdc830', '#65e065']
-
-offsets = {
-    'BallStick_r1': {
-        'hcp_mgh_1003': {
-            'accuracy': 2.95e2,
-            'precision': True
-        },
-        'rheinland_v3a_1_2mm': {
-            'accuracy': 1.57e2,
-            'precision': 2.08e2,
-        }},
-    'Tensor': {
-        'hcp_mgh_1003': {
-            'accuracy': 22,
-            'precision': 18,
-        },
-        'rheinland_v3a_1_2mm': {
-            'accuracy': 17,
-            'precision': 15,
-        }},
-    'NODDI': {
-        'hcp_mgh_1003': {
-            'accuracy': True,
-            'precision': True,
-        },
-        'rheinland_v3a_1_2mm': {
-            'accuracy': 1.38e2,
-            'precision': 1.75e2,
-        }},
-    'CHARMED_r1': {
-        'hcp_mgh_1003': {
-            'accuracy': 1,
-            'precision': 38,
-        },
-        'rheinland_v3a_1_2mm': {
-            'accuracy': 79,
-            'precision': 34,
-        }},
-}
-
 
 def plot_protocol_results(data, protocol_name, model_name):
     f, axarr = plt.subplots(1, 2, figsize=(6, 5))
@@ -255,7 +217,7 @@ def plot_protocol_results(data, protocol_name, model_name):
         ax.set_ylim((np.min(max_min) - 0.15 * (np.max(max_min) - np.min(max_min)),
                      np.max(max_min) + 0.15 * (np.max(max_min) - np.min(max_min))))
 
-        # ax.ticklabel_format(useOffset=offsets[model_name][protocol_name][plot_type], style='sci', scilimits=(-2, 2), axis='y')
+        ax.ticklabel_format(useOffset=True, style='sci', axis='y')
         # ax.yaxis.set_major_formatter(ScalarFormatter(useOffset=False))
         ax.yaxis.set_major_locator(ticker.MaxNLocator(5))
 
@@ -263,7 +225,7 @@ def plot_protocol_results(data, protocol_name, model_name):
             ax.yaxis.tick_right()
         # ax.set_title(plot_type.capitalize())
 
-    f.suptitle(model_titles[model_name] + ' - ' + protocol_names[protocol_name], y=0.98, x=0.6)
+    f.suptitle(protocol_names[protocol_name], y=0.98, x=0.6)
     f.savefig(mdt.make_path_joiner('/tmp/sampling_paper/adaptive_proposals/acc_prec/', make_dirs=True)('{}_{}.png'.format(protocol_name, model_name)))
 
     subprocess.Popen("""
@@ -279,7 +241,7 @@ for protocol_name in protocols:
             continue
         plot_protocol_results(protocol_results, protocol_name, model_name)
 
-plt.show()
+# plt.show()
 
 for model_name in model_names:
     subprocess.Popen("""

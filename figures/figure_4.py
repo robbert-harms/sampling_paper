@@ -27,9 +27,15 @@ def set_matplotlib_font_size(font_size):
 set_matplotlib_font_size(18)
 
 pjoin = mdt.make_path_joiner('/home/robbert/phd-data/papers/sampling_paper/simulations/')
-nmr_trials = 4
+nmr_trials = 10
 simulations_unweighted_signal_height = 1e4
-nmr_samples = 10000
+for_supplementary = True
+
+if for_supplementary:
+    nmr_samples = 20000
+else:
+    nmr_samples = 10000
+
 protocols = [
     'hcp_mgh_1003',
     'rheinland_v3a_1_2mm'
@@ -91,8 +97,13 @@ def get_ess_results():
                     list_of_ideal = []
 
                     for trial_ind in range(nmr_trials):
-                        current_pjoin = pjoin.create_extended(protocol_name, model_name, 'figure_4_5', str(snr),
-                                                              method_name, str(trial_ind), model_name, 'samples', 'first_10000')
+                        if for_supplementary:
+                            current_pjoin = pjoin.create_extended(protocol_name, model_name, 'figure_4_5', str(snr),
+                                                                  method_name, str(trial_ind), model_name, 'samples')
+                        else:
+                            current_pjoin = pjoin.create_extended(protocol_name, model_name, 'figure_4_5', str(snr),
+                                                                  method_name, str(trial_ind), model_name, 'samples',
+                                                                  'first_10000')
 
                         ess = mdt.load_nifti(current_pjoin('multivariate_ess', 'MultivariateESS')).get_data()
                         ess = np.nan_to_num(ess)
@@ -142,19 +153,19 @@ def plot_protocol_results(data, model_name):
         ax.set_xticklabels([ap_method_names[ap_method] for ap_method in ap_methods])
         for tick in ax.get_xticklabels():
             tick.set_rotation(45)
-        ax.set_xlim(-0.45, 1.5)
+        ax.set_xlim(-0.1, 1.5)
         ax.set_ylim((np.min(max_min) - 0.15 * (np.max(max_min) - np.min(max_min)),
                      np.max(max_min) + 0.15 * (np.max(max_min) - np.min(max_min))))
         ax.ticklabel_format(useOffset=False, axis='y')
         ax.set_title(protocol_names[protocol_name])
 
-    f.suptitle(model_titles[model_name], y=1)
+    f.suptitle(model_titles[model_name], y=1, x=0.55)
     f.savefig(mdt.make_path_joiner('/tmp/sampling_paper/adaptive_proposals/ess/', make_dirs=True)('{}.png'.format(model_name)))
 
 
 for model_name in model_names:
     plot_protocol_results(protocol_results, model_name)
-plt.show()
+# plt.show()
 
 for model_name in model_names:
     subprocess.Popen('convert -bordercolor white -border 25x35 {0}.png {0}.png'.format(model_name), shell=True,
