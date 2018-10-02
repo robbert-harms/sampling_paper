@@ -114,11 +114,17 @@ def prepare_ballstick2_params(params_cube):
 
 def prepare_charmed2_params(params_cube):
     """Make sure the weights sum to 1 and sort the Tensor diffusivities"""
+    param_names = mdt.get_model('CHARMED_r2')().get_free_param_names()
+    params_cube[..., param_names.index('Tensor.theta')] = params_cube[
+        ..., param_names.index('CHARMEDRestricted0.theta')]
+    params_cube[..., param_names.index('Tensor.phi')] = params_cube[..., param_names.index('CHARMEDRestricted0.phi')]
+
     weights_sum = np.sum(params_cube[:, [7, 11]], axis=1)
     indices = weights_sum > 1
     params_cube[indices, 7] /= weights_sum[indices]
     params_cube[indices, 11] /= weights_sum[indices]
 
+    params_cube[:, (7, 11)] = np.sort(params_cube[:, (7, 11)], axis=1)[:, ::-1]
     params_cube[:, 1:4] = np.sort(params_cube[:, 1:4], axis=1)[:, ::-1]
 
 
@@ -205,7 +211,7 @@ simulations = {
                               'CHARMEDRestricted1.d', 'CHARMEDRestricted1.theta', 'CHARMEDRestricted1.phi'],
         prepare_params_cube_cb=prepare_charmed2_params,
         lower_bounds=[1e3, 5e-11, 5e-11, 5e-11,    0,      0,     0, 0.2, 5e-11,     0,      0, 0.2, 5e-11,    0,    0],
-        upper_bounds=[1e9, 5e-9,  5e-9,   5e-9, np.pi, np.pi, np.pi, 0.8, 3e-9,  np.pi, np.pi, 0.8, 3e-9, np.pi, np.pi],
+        upper_bounds=[1e9, 5e-9,  5e-9,   5e-9, np.pi, np.pi, np.pi, 0.8, 5e-9,  np.pi, np.pi, 0.8, 5e-9, np.pi, np.pi],
     ),
     'CHARMED_r3': dict(
         # Available parameters:
