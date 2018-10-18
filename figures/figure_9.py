@@ -76,10 +76,10 @@ nmr_samples = {
 }
 
 model_names = [
-    'CHARMED_r1',
-    'NODDI',
     'BallStick_r1',
-    'Tensor'
+    'Tensor',
+    'NODDI',
+    'CHARMED_r1'
 ]
 
 
@@ -87,7 +87,7 @@ def func(subject_info, model_name, samples_output_dir):
     subject_id = subject_info.subject_id
     base_folder = subject_info.subject_base_folder
 
-    wm_mask = mdt.load_brain_mask(base_folder + '/output/optimization_paper/wm_mask.nii.gz')
+    wm_mask = mdt.load_brain_mask(base_folder + '/wm_mask.nii.gz')
     ess_data = mdt.load_nifti(samples_output_dir + subject_id +
                               '/' + model_name + '/samples/multivariate_ess/MultivariateESS').get_data()
 
@@ -124,16 +124,6 @@ for model_name in model_names:
                     '/home/robbert/phd-data/papers/sampling_paper/ess/hcp_mgh/'])
     mgh_results[model_name] = np.array([float(v) for v in ideal_samples_per_subject.values()])
 
-# plt.show()
-# exit(0)
-# with open('/tmp/tmp_results_estimate_ess.pkl', 'wb') as f:
-#     pickle.dump({'mgh': mgh_results, 'rls': rls_results}, f, pickle.HIGHEST_PROTOCOL)
-
-with open('/tmp/tmp_results_estimate_ess.pkl', 'rb') as f:
-    d = pickle.load(f)
-    mgh_results = d['mgh']
-    rls_results = d['rls']
-
 print('rls:', {k: np.mean(rls_results[k]) for k in model_names})
 print('mgh:', {k: np.mean(mgh_results[k]) for k in model_names})
 
@@ -151,8 +141,8 @@ mgh_rects = ax.bar((x_locations + 0) * width, [np.mean(mgh_results[k]) for k in 
                    width, color='#fdc830', yerr=[np.std(mgh_results[k]) for k in model_names],
                    error_kw=dict(ecolor='gray', lw=2, capsize=5, capthick=2))
 
-rls_rects = ax.bar((x_locations + 1) * width, [np.mean(rls_results[k]) for k in model_names],
-                   width, color='#8db8da', yerr=[np.std(rls_results[k]) for k in model_names],
+rls_rects = ax.bar((x_locations[:-1] + 1) * width, [np.mean(rls_results[k]) for k in model_names[:-1]],
+                   width, color='#8db8da', yerr=[np.std(rls_results[k]) for k in model_names[:-1]],
                    error_kw=dict(ecolor='gray', lw=2, capsize=5, capthick=2))
 
 ax.set_ylabel('Number of samples')
@@ -160,6 +150,5 @@ ax.set_xticks((x_locations + 1) * width)
 ax.set_xticklabels(model_names)
 ax.legend((mgh_rects[0], rls_rects[0]), ('HCP MGH', 'RLS'), loc='upper left')
 ax.set_ylim([9000, 35000])
-# ax.title(r'Estimated minimum number of MCMC samples')
 plt.show()
 
