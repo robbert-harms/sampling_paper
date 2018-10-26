@@ -8,6 +8,7 @@ from mdt.lib.post_processing import DTIMeasures
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn
+seaborn.set()
 
 __author__ = 'Robbert Harms'
 __date__ = '2018-02-03'
@@ -213,7 +214,7 @@ def plot_protocol_results(data, protocol_name, model_name):
         ax.set_xticklabels([ap_method_names[ap_method] for ap_method in ap_methods])
         for tick in ax.get_xticklabels():
             tick.set_rotation(45)
-        ax.set_xlim(-0.1, 1.5)
+        ax.set_xlim(-0.28, 1.35)
         ax.set_ylim((np.min(max_min) - 0.15 * (np.max(max_min) - np.min(max_min)),
                      np.max(max_min) + 0.15 * (np.max(max_min) - np.min(max_min))))
 
@@ -225,7 +226,9 @@ def plot_protocol_results(data, protocol_name, model_name):
             ax.yaxis.tick_right()
         # ax.set_title(plot_type.capitalize())
 
-    f.suptitle(protocol_names[protocol_name], y=0.98, x=0.6)
+    f.suptitle(protocol_names[protocol_name], y=0.93)
+    f.tight_layout()
+    plt.subplots_adjust(top=0.85)
     f.savefig(mdt.make_path_joiner('/tmp/sampling_paper/adaptive_proposals/acc_prec/', make_dirs=True)('{}_{}.png'.format(protocol_name, model_name)))
 
     subprocess.Popen("""
@@ -251,15 +254,22 @@ for model_name in model_names:
         convert -bordercolor white -border 40x30 {model_name}.png {model_name}.png
         convert {model_name}.png -splice 0x40 {model_name}.png
         convert {model_name}.png -font /usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf \\
-            -gravity center -pointsize 28 -fill '#282828' -annotate +110-250 '{model_title}' {model_name}.png
+            -gravity center -pointsize 28 -fill '#282828' -annotate +{offset}-230 '{model_title}' {model_name}.png
 
-        """.format(model_name=model_name, model_title=model_titles[model_name]), shell=True,
+        """.format(model_name=model_name, model_title=model_titles[model_name],
+                   offset=(0 if model_name.startswith('CHARMED') else 280)), shell=True,
                      cwd='/tmp/sampling_paper/adaptive_proposals/acc_prec/').wait()
 
+
 subprocess.Popen("""
-convert BallStick_r1.png Tensor.png +append \( NODDI.png CHARMED_r1.png +append \) -append adaptive_proposals_acc_prec.png
+convert BallStick_r1.png Tensor.png +append \( NODDI.png CHARMED_r1.png +append \) -append adaptive_proposals_acc_prec_unidir.png
 """, shell=True, cwd='/tmp/sampling_paper/adaptive_proposals/acc_prec/').wait()
 
 subprocess.Popen("""
 convert BallStick_r2.png BallStick_r3.png +append \( CHARMED_r2.png CHARMED_r3.png +append \) -append adaptive_proposals_acc_prec_multidir.png
 """, shell=True, cwd='/tmp/sampling_paper/adaptive_proposals/acc_prec/').wait()
+
+subprocess.Popen("""
+convert {0}.png {1}.png -append {2}.png
+""".format('adaptive_proposals_acc_prec_unidir', 'adaptive_proposals_acc_prec_multidir', 'adaptive_proposals_acc_prec'),
+                 shell=True, cwd='/tmp/sampling_paper/adaptive_proposals/acc_prec/').wait()

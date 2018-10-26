@@ -25,7 +25,7 @@ def save_first_10000(sampling_output, build_model):
     return {'first_10000': build_model.get_post_sampling_maps(first_10000)}
 
 
-for trial_ind in range(0, nmr_trials):
+for trial_ind in range(8, nmr_trials):
     for model_name in model_names:
 
         model_specific_protocols = protocols

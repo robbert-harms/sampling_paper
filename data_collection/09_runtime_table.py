@@ -14,9 +14,9 @@ __licence__ = 'LGPL v3'
 
 
 """
-Computes the optimization and sampling times for table 7 of the paper.
+Computes the optimization and sampling times for table 6 of the paper.
 
-This computes CPU and GPU statistics for a single slice over 10k datapoints and extrapolates the rest up to 
+This computes CPU and GPU statistics for a single slice over 10k datapoints to later extrapolate the rest up to 
 the total number of white matter voxels and minimum number of samples.  
 """
 
@@ -99,12 +99,16 @@ def func(subject_info, model_name, dataset_name, opt_output_dir, samples_output_
                          method='AMWG',
                          initialization_data={'inits': starting_point},
                          store_samples=False,
-                         nmr_samples=nmr_samples[model_name],
+                         nmr_samples=nmr_samples,
                          burnin=0,
                          thinning=0,
                          cl_device_ind=device_ind,
                          post_processing={'multivariate_ess': False,
                                           'model_defined_maps': False})
+
+
+        with open(pjoin('nmr_voxels.txt'), 'a') as f:
+            f.write('{}, {}, {}\n'.format(dataset_name, subject_id, np.count_nonzero(mask)))
 
         with open(pjoin('times.txt'), 'a') as f:
             f.write('{}, {}, {}, {}, {}, {}\n'.format(device_names[device_ind], 'sampling',
@@ -114,19 +118,18 @@ def func(subject_info, model_name, dataset_name, opt_output_dir, samples_output_
 cpu_device_ind = 0
 gpu_device_ind = 1
 
+nmr_samples = 10000
+
 model_names = [
+    'CHARMED_r1',
+    'CHARMED_r2',
+    'CHARMED_r3',
+    'BallStick_r3',
+    'BallStick_r2',
     'BallStick_r1',
     'NODDI',
-    'Tensor',
-    'CHARMED_r1',
+    'Tensor'
 ]
-
-nmr_samples = {
-    'BallStick_r1': 15000,
-    'NODDI': 20000,
-    'Tensor': 20000,
-    'CHARMED_r1': 30000
-}
 
 
 for model_name in model_names:

@@ -1,6 +1,8 @@
 import glob
 import os
 import pickle
+
+import matplotlib
 import matplotlib.pyplot as plt
 import mdt
 from mdt.lib.batch_utils import SelectedSubjects, SimpleBatchProfile, BatchFitProtocolLoader, SimpleSubjectInfo
@@ -70,36 +72,57 @@ set_matplotlib_font_size(18)
 
 nmr_samples = {
     'BallStick_r1': 15000,
+    'BallStick_r2': 20000,
+    'BallStick_r3': 25000,
     'NODDI': 20000,
     'Tensor': 20000,
-    'CHARMED_r1': 30000
+    'CHARMED_r1': 30000,
+    'CHARMED_r2': 40000,
+    'CHARMED_r3': 50000
 }
 
 model_names = [
     'BallStick_r1',
+    'BallStick_r2',
+    'BallStick_r3',
     'Tensor',
     'NODDI',
-    'CHARMED_r1'
+    'CHARMED_r1',
+    'CHARMED_r2',
+    'CHARMED_r3',
 ]
 
+model_titles = {
+    'BallStick_r1': 'BallStick_in1',
+    'BallStick_r2': 'BallStick_in2',
+    'BallStick_r3': 'BallStick_in3',
+    'CHARMED_r1': 'CHARMED_in1',
+    'CHARMED_r2': 'CHARMED_in2',
+    'CHARMED_r3': 'CHARMED_in3',
+    'NODDI': 'NODDI',
+    'Tensor': 'Tensor'
+}
 
-def func(subject_info, model_name, samples_output_dir):
+
+def func(subject_info, data_name, model_name, samples_output_dir):
+    if data_name == 'rls' and model_name.startswith('CHARMED'):
+        return 0
     subject_id = subject_info.subject_id
-    base_folder = subject_info.subject_base_folder
 
-    wm_mask = mdt.load_brain_mask(base_folder + '/wm_mask.nii.gz')
+    used_mask = mdt.load_brain_mask(samples_output_dir + subject_id + '/' + model_name + '/samples/UsedMask')
     ess_data = mdt.load_nifti(samples_output_dir + subject_id +
                               '/' + model_name + '/samples/multivariate_ess/MultivariateESS').get_data()
 
-    ess = np.mean(mdt.create_roi(ess_data, wm_mask))
+    ess = np.mean(mdt.create_roi(ess_data, used_mask))
 
     nmr_params = len(mdt.get_model(model_name)().get_free_param_names())
 
     more_samples_required = (minimum_multivariate_ess(nmr_params, alpha=0.05, epsilon=0.1) - ess) / (ess / nmr_samples[model_name])
     ideal_nmr_samples = nmr_samples[model_name] + more_samples_required
 
-    print('subject_id, model_name, ess, more_samples_required, ideal_nmr_samples')
-    print(subject_id, model_name, ess, more_samples_required, ideal_nmr_samples)
+    print('subject_id, model_name, ess, more_samples_required, ideal_nmr_samples', 'nmr_params', 'theoretical_ess')
+    print(subject_id, model_name, ess, more_samples_required, ideal_nmr_samples,
+          nmr_params, minimum_multivariate_ess(nmr_params, alpha=0.05, epsilon=0.1) )
     return ideal_nmr_samples
 
 
@@ -108,21 +131,24 @@ rls_results = {}
 
 for model_name in model_names:
     ideal_samples_per_subject = mdt.batch_apply(
+        func, '/home/robbert/phd-data/hcp_mgh/',
+        batch_profile=mdt.get_batch_profile('HCP_MGH')(),
+        subjects_selection=SelectedSubjects(indices=range(10)),
+        extra_args=['hcp',
+                    model_name,
+                    '/home/robbert/phd-data/papers/sampling_paper/ess/hcp_mgh/'])
+    mgh_results[model_name] = np.array([float(v) for v in ideal_samples_per_subject.values()])
+
+    ideal_samples_per_subject = mdt.batch_apply(
         func, '/home/robbert/phd-data/rheinland/',
         batch_profile=RheinLandBatchProfile(resolutions_to_use=['data_ms20']),
         subjects_selection=SelectedSubjects(indices=range(10)),
-        extra_args=[model_name,
+        extra_args=['rls',
+                    model_name,
                     '/home/robbert/phd-data/papers/sampling_paper/ess/rheinland/'
                     ])
     rls_results[model_name] = np.array([float(v) for v in ideal_samples_per_subject.values()])
 
-    ideal_samples_per_subject = mdt.batch_apply(
-        func, '/home/robbert/phd-data/hcp_mgh/',
-        batch_profile=mdt.get_batch_profile('HCP_MGH')(),
-        subjects_selection=SelectedSubjects(indices=range(10)),
-        extra_args=[model_name,
-                    '/home/robbert/phd-data/papers/sampling_paper/ess/hcp_mgh/'])
-    mgh_results[model_name] = np.array([float(v) for v in ideal_samples_per_subject.values()])
 
 print('rls:', {k: np.mean(rls_results[k]) for k in model_names})
 print('mgh:', {k: np.mean(mgh_results[k]) for k in model_names})
@@ -135,6 +161,8 @@ f.subplots_adjust(left=0.2)
 f.suptitle(r'Estimated minimum number of MCMC samples', y=1)
 
 x_locations = np.array(range(1, 3 * len(model_names), 3))  # the x locations for the groups
+x_locations[-2] = 18
+x_locations[-1] = 20
 width = 0.35       # the width of the bars
 
 mgh_rects = ax.bar((x_locations + 0) * width, [np.mean(mgh_results[k]) for k in model_names],
@@ -146,9 +174,19 @@ rls_rects = ax.bar((x_locations[:-1] + 1) * width, [np.mean(rls_results[k]) for 
                    error_kw=dict(ecolor='gray', lw=2, capsize=5, capthick=2))
 
 ax.set_ylabel('Number of samples')
-ax.set_xticks((x_locations + 1) * width)
-ax.set_xticklabels(model_names)
+
+tick_locations = x_locations * width
+tick_locations[:-3] += width / 2.
+
+ax.set_xticks(tick_locations)
+ax.set_xticklabels([model_titles[n] for n in model_names])
+
+plt.setp( ax.xaxis.get_majorticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+for tick in ax.xaxis.get_major_ticks():
+    tick.label.set_fontsize(16)
+
 ax.legend((mgh_rects[0], rls_rects[0]), ('HCP MGH', 'RLS'), loc='upper left')
 ax.set_ylim([9000, 35000])
+plt.tight_layout()
 plt.show()
 

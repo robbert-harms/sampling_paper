@@ -4,6 +4,7 @@ import mdt
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn
+seaborn.set()
 
 
 __author__ = 'Robbert Harms'
@@ -29,7 +30,7 @@ set_matplotlib_font_size(18)
 pjoin = mdt.make_path_joiner('/home/robbert/phd-data/papers/sampling_paper/simulations/')
 nmr_trials = 10
 simulations_unweighted_signal_height = 1e4
-for_supplementary = True
+for_supplementary = False
 
 if for_supplementary:
     nmr_samples = 20000
@@ -153,7 +154,7 @@ def plot_protocol_results(data, model_name):
         ax.set_xticklabels([ap_method_names[ap_method] for ap_method in ap_methods])
         for tick in ax.get_xticklabels():
             tick.set_rotation(45)
-        ax.set_xlim(-0.1, 1.5)
+        ax.set_xlim(-0.28, 1.35)
         ax.set_ylim((np.min(max_min) - 0.15 * (np.max(max_min) - np.min(max_min)),
                      np.max(max_min) + 0.15 * (np.max(max_min) - np.min(max_min))))
         ax.ticklabel_format(useOffset=False, axis='y')
@@ -177,7 +178,7 @@ convert -trim {0}.png {0}.png
 convert {0}.png -splice 0x100 {0}.png
 convert {0}.png -font /usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf -gravity center -pointsize 28 -fill '#282828' -annotate +0-530 'ESS of Adaptive Proposals' {0}.png
 convert -trim {0}.png {0}.png
-""".format('adaptive_proposals_ess')
+""".format('adaptive_proposals_ess_unidir')
 subprocess.Popen(commands, shell=True, cwd='/tmp/sampling_paper/adaptive_proposals/ess/').wait()
 
 commands = """
@@ -188,3 +189,10 @@ convert {0}.png -font /usr/share/fonts/truetype/liberation/LiberationSans-Regula
 convert -trim {0}.png {0}.png
 """.format('adaptive_proposals_ess_multidir')
 subprocess.Popen(commands, shell=True, cwd='/tmp/sampling_paper/adaptive_proposals/ess/').wait()
+
+commands = """
+convert {0}.png {1}.png -append {2}.png
+""".format('adaptive_proposals_ess_unidir', 'adaptive_proposals_ess_multidir', 'adaptive_proposals_ess')
+subprocess.Popen(commands, shell=True, cwd='/tmp/sampling_paper/adaptive_proposals/ess/').wait()
+
+

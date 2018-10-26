@@ -1,6 +1,7 @@
 import glob
 import os
 import mdt
+import numpy as np
 from mdt import config_context
 from mdt.lib.batch_utils import SimpleBatchProfile, BatchFitProtocolLoader, SimpleSubjectInfo
 
@@ -18,15 +19,24 @@ pjoin = mdt.make_path_joiner(r'/home/robbert/phd-data/papers/sampling_paper/ess/
 
 nmr_samples = {
     'BallStick_r1': 15000,
+    'BallStick_r2': 20000,
+    'BallStick_r3': 25000,
     'NODDI': 20000,
     'Tensor': 20000,
-    'CHARMED_r1': 30000
+    'CHARMED_r1': 30000,
+    'CHARMED_r2': 40000,
+    'CHARMED_r3': 50000
 }
+
 
 model_names = [
     'CHARMED_r1',
-    'NODDI',
+    'CHARMED_r2',
+    'CHARMED_r3',
+    'BallStick_r3',
+    'BallStick_r2',
     'BallStick_r1',
+    'NODDI',
     'Tensor'
 ]
 
@@ -71,7 +81,10 @@ class RheinLandBatchProfile(SimpleBatchProfile):
         return 'Rheinland'
 
 
-def func(subject_info, model_name, opt_output_dir, samples_output_dir):
+def func(subject_info, data_name, model_name, opt_output_dir, samples_output_dir):
+    if data_name == 'rls' and model_name.startswith('CHARMED'):
+        return
+
     subject_id = subject_info.subject_id
     input_data = subject_info.get_input_data()
     base_folder = subject_info.subject_base_folder
@@ -81,16 +94,20 @@ def func(subject_info, model_name, opt_output_dir, samples_output_dir):
                                    opt_output_dir + '/' + subject_id)
 
     wm_mask = mdt.load_brain_mask(base_folder + '/wm_mask.nii.gz')
+    final_mask = np.zeros_like(wm_mask)
+
+    for slice_ind in [wm_mask.shape[2]//2 - 5, wm_mask.shape[2]//2, wm_mask.shape[2]//2 + 5]:
+        final_mask[..., slice_ind] = wm_mask[..., slice_ind]
 
     wm_input_data = input_data.copy_with_updates(input_data.protocol, input_data.signal4d,
-                                                 wm_mask, input_data.nifti_header,
+                                                 final_mask, input_data.nifti_header,
                                                  noise_std=input_data.noise_std)
 
     print('Subject {}'.format(subject_id))
     with config_context('''
-            processing_strategies:
-                sampling:
-                    max_nmr_voxels: 1000
+        processing_strategies:
+            sampling:
+                max_nmr_voxels: 1000
         '''):
         mdt.sample_model(model_name,
                          wm_input_data,
@@ -104,16 +121,18 @@ def func(subject_info, model_name, opt_output_dir, samples_output_dir):
 
 
 for model_name in model_names:
-    mdt.batch_apply(func, '/home/robbert/phd-data/rheinland/',
-                    batch_profile=RheinLandBatchProfile(resolutions_to_use=['data_ms20']),
-                    subjects_selection=range(10),
-                    extra_args=[model_name,
-                                '/home/robbert/phd-data/rheinland_output/',
-                                pjoin('rheinland')])
-
     mdt.batch_apply(func, '/home/robbert/phd-data/hcp_mgh/',
                     batch_profile='HCP_MGH',
                     subjects_selection=range(10),
-                    extra_args=[model_name,
+                    extra_args=['hcp',
+                                model_name,
                                 '/home/robbert/phd-data/hcp_mgh_output/',
                                 pjoin('hcp_mgh')])
+
+    mdt.batch_apply(func, '/home/robbert/phd-data/rheinland/',
+                    batch_profile=RheinLandBatchProfile(resolutions_to_use=['data_ms20']),
+                    subjects_selection=range(10),
+                    extra_args=['rls',
+                                model_name,
+                                '/home/robbert/phd-data/rheinland_output/',
+                                pjoin('rheinland')])
